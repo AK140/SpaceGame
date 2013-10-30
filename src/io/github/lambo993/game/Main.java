@@ -1,6 +1,7 @@
 package io.github.lambo993.game;
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.JFrame;
 
 public final class Main extends JFrame implements Runnable {
@@ -20,7 +21,7 @@ public final class Main extends JFrame implements Runnable {
 		y = 192;
 		xVelocity = 0;
 		yVelocity = 0;
-		//TODO: Make the ship moving
+		addKeyListener(new KeyListenerEvent());
 	}
 
 	@Override
@@ -58,5 +59,52 @@ public final class Main extends JFrame implements Runnable {
 		System.out.println("Starting SpaceGame version 0.0.0");
 		Main m = new Main();
 		new Thread(m).start();
+	}
+
+	private class KeyListenerEvent extends KeyAdapter {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			switch (e.getKeyCode()) {
+				case KeyEvent.VK_UP:
+				case KeyEvent.VK_W:
+					yVelocity = -1;
+					break;
+				case KeyEvent.VK_DOWN:
+				case KeyEvent.VK_S:
+					yVelocity = 1;
+					break;
+				case KeyEvent.VK_LEFT:
+				case KeyEvent.VK_A:
+					xVelocity = -1;
+					break;
+				case KeyEvent.VK_RIGHT:
+				case KeyEvent.VK_D:
+					xVelocity = 1;
+					break;
+				default:
+					break;
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			switch (e.getKeyCode()) {
+				case KeyEvent.VK_UP:
+				case KeyEvent.VK_W:
+				case KeyEvent.VK_DOWN:
+				case KeyEvent.VK_S:
+					yVelocity = 0;
+					break;
+				case KeyEvent.VK_LEFT:
+				case KeyEvent.VK_A:
+				case KeyEvent.VK_RIGHT:
+				case KeyEvent.VK_D:
+					xVelocity = 0;
+					break;
+				default:
+					break;
+			}
+		}
 	}
 }
