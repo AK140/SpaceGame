@@ -8,8 +8,10 @@ public final class Main extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 5832158247289767468L;
 	private int x, y, xVelocity, yVelocity;
+	private boolean isEnabled = false;
 
 	public Main() {
+		setEnabled(true);
 		setSize(512, 384);
 		setTitle("SpaceGame");
 		setLocationRelativeTo(null);
@@ -26,7 +28,7 @@ public final class Main extends JFrame implements Runnable {
 
 	@Override
 	public void run() {
-		while (true) {
+		while (isEnabled()) {
 			move();
 			try {
 				Thread.sleep(5);
@@ -54,6 +56,34 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	@Override
+	public void setEnabled(final boolean enabled) {
+		if (isEnabled() != enabled) {
+			isEnabled = enabled;
+
+			if (isEnabled) {
+				onEnable();
+			} else {
+				onDisable();
+			}
+		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return isEnabled;
+	}
+
+	private void onEnable() {
+		System.out.println("Starting game...");
+		System.out.println("Running SpaceGame version 0.0.1_Alpha");
+	}
+
+	private void onDisable() {
+		System.err.println("Closing game...");
+		System.exit(0);
+	}
+
+	@Override
 	public void paint(Graphics g) {
 		Image dbImg = createImage(getWidth(), getHeight());
 		Graphics dbg = dbImg.getGraphics();
@@ -68,9 +98,13 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Starting SpaceGame version 0.0.1");
 		Main m = new Main();
 		new Thread(m).start();
+	}
+
+	@Override
+	public String toString() {
+		return "Game";
 	}
 
 	private class KeyListenerEvent extends KeyAdapter {
@@ -93,6 +127,9 @@ public final class Main extends JFrame implements Runnable {
 				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
 					xVelocity = 2;
+					break;
+				case KeyEvent.VK_ESCAPE:
+					setEnabled(false);
 					break;
 				default:
 					break;
