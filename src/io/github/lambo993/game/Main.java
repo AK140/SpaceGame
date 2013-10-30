@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 public final class Main extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 5832158247289767468L;
+	private int x, y;
 
 	public Main() {
 		setSize(512, 384);
@@ -13,7 +14,10 @@ public final class Main extends JFrame implements Runnable {
 		setLocationRelativeTo(null);
 		setVisible(true);
 		setResizable(false);
+		setBackground(Color.WHITE);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		x = 256;
+		y = 192;
 	}
 
 	@Override
@@ -23,7 +27,15 @@ public final class Main extends JFrame implements Runnable {
 
 	@Override
 	public void paint(Graphics g) {
-		g.drawImage(null, 0, 0, this);
+		Image dbImg = createImage(getWidth(), getHeight());
+		Graphics dbg = dbImg.getGraphics();
+		draw(dbg);
+		g.drawImage(dbImg, 0, 0, this);
+	}
+
+	public void draw(Graphics g) {
+		g.setColor(Color.BLACK);
+		g.fillRect(x, y, 20, 20);
 	}
 
 	public static void main(String[] args) {
