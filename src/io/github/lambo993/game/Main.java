@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 public final class Main extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 5832158247289767468L;
-	private int x, y;
+	private int x, y, xVelocity, yVelocity;
 
 	public Main() {
 		setSize(512, 384);
@@ -18,11 +18,26 @@ public final class Main extends JFrame implements Runnable {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		x = 256;
 		y = 192;
+		xVelocity = 0;
+		yVelocity = 0;
+		//TODO: Make the ship moving
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		while (true) {
+			move();
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException ex) {
+				System.err.println("Error: Thread Interrupted.");
+			}
+		}
+	}
+
+	public void move() {
+		x += xVelocity;
+		y += yVelocity;
 	}
 
 	@Override
@@ -36,6 +51,7 @@ public final class Main extends JFrame implements Runnable {
 	public void draw(Graphics g) {
 		g.setColor(Color.BLACK);
 		g.fillRect(x, y, 20, 20);
+		repaint();
 	}
 
 	public static void main(String[] args) {
