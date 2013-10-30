@@ -39,6 +39,18 @@ public final class Main extends JFrame implements Runnable {
 	public void move() {
 		x += xVelocity;
 		y += yVelocity;
+		if (x < 0) {
+			x = 0;
+		}
+		if (y < 20) {
+			y = 20;
+		}
+		if (x > 462) {
+			x = 462;
+		}
+		if (y > 344) {
+			y = 344;
+		}
 	}
 
 	@Override
@@ -51,12 +63,12 @@ public final class Main extends JFrame implements Runnable {
 
 	public void draw(Graphics g) {
 		g.setColor(Color.BLACK);
-		g.fillRect(x, y, 20, 20);
+		g.fillRect(x, y, 69, 42);
 		repaint();
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Starting SpaceGame version 0.0.0");
+		System.out.println("Starting SpaceGame version 0.0.1");
 		Main m = new Main();
 		new Thread(m).start();
 	}
@@ -68,19 +80,19 @@ public final class Main extends JFrame implements Runnable {
 			switch (e.getKeyCode()) {
 				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
-					yVelocity = -1;
+					yVelocity = -2;
 					break;
 				case KeyEvent.VK_DOWN:
 				case KeyEvent.VK_S:
-					yVelocity = 1;
+					yVelocity = 2;
 					break;
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
-					xVelocity = -1;
+					xVelocity = -2;
 					break;
 				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
-					xVelocity = 1;
+					xVelocity = 2;
 					break;
 				default:
 					break;
