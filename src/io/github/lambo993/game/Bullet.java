@@ -76,6 +76,11 @@ public class Bullet implements Entity {
     }
 
 	@Override
+	public EntityType getType() {
+		return EntityType.BULLET;
+	}
+
+	@Override
 	public String toString() {
 		return "Bullet";
 	}

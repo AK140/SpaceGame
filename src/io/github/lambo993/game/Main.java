@@ -17,10 +17,10 @@ import javax.swing.*;
 public final class Main extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 5832158247289767468L;
-	private Player player;
-	private ArrayList<Bullet> bullets;
-	private ArrayList<Enemy> enemies;
-	private ArrayList<PowerUp> powers;
+	private final Player player;
+	private final ArrayList<Bullet> bullets;
+	private final ArrayList<Enemy> enemies;
+	private final ArrayList<PowerUp> powers;
 	private boolean isEnabled = false;
 	private int score = 0;
 	private boolean screenShowed;
@@ -28,27 +28,41 @@ public final class Main extends JFrame implements Runnable {
 	private static final int PRESS_PERIOD = 0x177;
 	private long lastPressMs = 0;
 
-	public Main() {}
+	/**
+	 * Construct a Windowless <code>Main</code>.
+	 * To instance this class
+	 */
+	public Main() {
+		this(null, false);
+	}
 
-	protected Main(String title, boolean enabled) throws HeadlessException {
-		setEnabled(enabled);
-		setSize(800, 600);
-		setResizable(false);
-		setLocationRelativeTo(null);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setBackground(Color.BLACK);
-		setVisible(true);
-		setTitle(title);
-		Cursor cursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
-		setCursor(cursor);
-		addKeyListener(new KeyListenerEvent());
-		addMouseListener(new MouseListenerEvent());
-		addWindowListener(new WindowsListener());
+	/**
+	 * Construct The Game
+	 * @param title Title for the Window
+	 * @param createWindows true if create Window false if not
+	 * @throws HeadlessException
+	 */
+	protected Main(final String title, final boolean createWindows) throws HeadlessException {
+		if (createWindows) {
+			setEnabled(true);
+			setSize(800, 600);
+			setResizable(false);
+			setLocationRelativeTo(null);
+			setDefaultCloseOperation(EXIT_ON_CLOSE);
+			setBackground(Color.BLACK);
+			setVisible(true);
+			setTitle(title);
+			Cursor cursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
+			setCursor(cursor);
+			addKeyListener(new KeyListenerEvent());
+			addMouseListener(new MouseListenerEvent());
+			addWindowListener(new WindowsListener());
+		}
 		player = new Player(this);
-		new Thread(player).start();
 		bullets = new ArrayList<Bullet>();
 		enemies = new ArrayList<Enemy>();
 		powers = new ArrayList<PowerUp>();
+		new Thread(player).start();
 	}
 
 	@Override
@@ -66,14 +80,14 @@ public final class Main extends JFrame implements Runnable {
 				}
 			}
 			for (int i = enemies.size() - 1; i >= 0; i--) {
-			    for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
-			        if (collidesWith(bullets.get(j), enemies.get(i))) {
-			        	playSound("/io/github/lambo993/game/sound/hit.wav");
-			            enemies.remove(i);
-			            bullets.remove(j);
-			            addScore(1);
-			        }
-			    }
+				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
+					if (collidesWith(bullets.get(j), enemies.get(i))) {
+						playSound("/io/github/lambo993/game/sound/hit.wav");
+						enemies.remove(i);
+						bullets.remove(j);
+						addScore(1);
+					}
+				}
 			}
 			for (int i = 0; i < powers.size(); i++) {
 				if (collidesWith(player, powers.get(i))) {
@@ -84,10 +98,10 @@ public final class Main extends JFrame implements Runnable {
 				}
 			}
 			try {
-                Thread.sleep(5);
-            } catch (InterruptedException ex) {
-                System.err.println("Error: Thread Interrupted.");
-            }
+				Thread.sleep(5);
+			} catch (InterruptedException ex) {
+				System.err.println("Error: Thread Interrupted.");
+			}
 		}
 	}
 
@@ -139,6 +153,9 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.4_Alpha
 	 */
 	public static Image loadImage(String path) {
+		if (path == null) {
+			throw new IllegalArgumentException("path cannot be null!");
+		}
 		ImageIcon sid = new ImageIcon(Main.class.getResource(path));
 		return sid.getImage();
 	}
@@ -201,6 +218,10 @@ public final class Main extends JFrame implements Runnable {
 		return hitBox1.intersects(hitBox2) || hitBox2.intersects(hitBox1);
 	}
 
+	public Player getPlayer() {
+		return player;
+	}
+
 	/**
 	 * Delays the bullet shooting
 	 * @since version 1.7.5_Alpha
@@ -260,6 +281,7 @@ public final class Main extends JFrame implements Runnable {
 	private void onEnable() {
 		System.out.println("Starting game...");
 		setIconImage(loadImage("/io/github/lambo993/game/images/Ship.png"));
+		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		System.out.println("You are now running SuperSpaceShooter version 1.7.7_Alpha Developed by Lamboling Seans");
 	}
 
@@ -309,6 +331,9 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.4_Alpha
 	 */
 	public int getScore() {
+		if (score < 0) {
+			score = 0;
+		}
 		return score;
 	}
 
@@ -317,8 +342,8 @@ public final class Main extends JFrame implements Runnable {
 	 * @param score sets the score
 	 * @since version 1.4_Alpha
 	 */
-	public void setScore(int score) {
-		this.score = score;
+	public void setScore(int newScore) {
+		score = newScore;
 	}
 
 	/**
@@ -354,10 +379,9 @@ public final class Main extends JFrame implements Runnable {
 	 * @param args the JVM Arguments
 	 * @since version 0.1_Alpha
 	 */
-	public static void main(final String[] args) {
-		Main m = new Main("SuperSpaceShooter", true);
+	public static final void main(final String[] args) {
+		Main m = new Main("Space Catastrophe", true);
 		new Thread(m).start();
-		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		while (m.isEnabled()) {
 			m.spawnEnemy(15);
 			m.spawnPowers(1);
@@ -380,97 +404,96 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 0.3_Alpha
 	 */
 	private class KeyListenerEvent extends KeyAdapter {
-
 		@Override
 		public void keyPressed(KeyEvent event) {
 			switch (event.getKeyCode()) {
-				case KeyEvent.VK_UP:
-				case KeyEvent.VK_W:
-					player.yVelocity = -2;
-					break;
-				case KeyEvent.VK_DOWN:
-				case KeyEvent.VK_S:
-					player.yVelocity = 2;
-					break;
-                case KeyEvent.VK_LEFT:
-                case KeyEvent.VK_A:
-                    player.xVelocity = -2;
-                    break;
-                case KeyEvent.VK_RIGHT:
-                case KeyEvent.VK_D:
-                    player.xVelocity = 2;
-                    break;
-                case KeyEvent.VK_R:
-                	onReset();
-                	break;
-                case KeyEvent.VK_T:
-                	break;
-                case KeyEvent.VK_Z:
-                	fireBullet();
-                	break;
-                case KeyEvent.VK_F3:
-                	if (!screenShowed) {
-                		screenShowed = true;
-                		} else {
-                		screenShowed = false;
-                	}
-                	break;
-                case KeyEvent.VK_F8:
-                	if (isSoundMuted) {
-                		isSoundMuted = false;
-                		System.out.println("Unmuted");
-                	} else {
-                		isSoundMuted = true;
-                		System.out.println("Mutted");
-                	}
-                	break;
-                case KeyEvent.VK_ESCAPE:
-                	setEnabled(false);
-                	break;
-                default:
-                    break;
-            }
-        }
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_W:
+				player.yVelocity = -2;
+				break;
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_S:
+				player.yVelocity = 2;
+				break;
+			case KeyEvent.VK_LEFT:
+			case KeyEvent.VK_A:
+				player.xVelocity = -2;
+				break;
+			case KeyEvent.VK_RIGHT:
+			case KeyEvent.VK_D:
+				player.xVelocity = 2;
+				break;
+			case KeyEvent.VK_R:
+				onReset();
+				break;
+			case KeyEvent.VK_T:
+				break;
+			case KeyEvent.VK_Z:
+				fireBullet();
+				break;
+			case KeyEvent.VK_F3:
+				if (!screenShowed) {
+					screenShowed = true;
+				} else {
+					screenShowed = false;
+				}
+				break;
+			case KeyEvent.VK_F8:
+				if (isSoundMuted) {
+					isSoundMuted = false;
+					System.out.println("Unmuted");
+				} else {
+					isSoundMuted = true;
+					System.out.println("Mutted");
+				}
+				break;
+			case KeyEvent.VK_ESCAPE:
+				setEnabled(false);
+				break;
+			default:
+				break;
+			}
+		}
 
-        @Override
-        public void keyReleased(KeyEvent event) {
-            switch (event.getKeyCode()) {
-                case KeyEvent.VK_UP:
-                case KeyEvent.VK_W:
-                case KeyEvent.VK_DOWN:
-                case KeyEvent.VK_S:
-                    player.yVelocity = 0;
-                    break;
-                case KeyEvent.VK_LEFT:
-                case KeyEvent.VK_A:
-                case KeyEvent.VK_RIGHT:
-                case KeyEvent.VK_D:
-                    player.xVelocity = 0;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
+		@Override
+		public void keyReleased(KeyEvent event) {
+			switch (event.getKeyCode()) {
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_W:
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_S:
+				player.yVelocity = 0;
+				break;
+			case KeyEvent.VK_LEFT:
+			case KeyEvent.VK_A:
+			case KeyEvent.VK_RIGHT:
+			case KeyEvent.VK_D:
+				player.xVelocity = 0;
+				break;
+			default:
+				break;
+			}
+		}
+	}
 
-    /**
-     * The Mouse Key input
-     * @author Lamboling Seans
-     * @since version 0.7_Alpha
-     */
-    private class MouseListenerEvent extends MouseAdapter {
+	/**
+	 * The Mouse Key input
+	 * @author Lamboling Seans
+	 * @since version 0.7_Alpha
+	 */
+	private class MouseListenerEvent extends MouseAdapter {
 
-    	@Override
-        public void mousePressed(MouseEvent event) {
-        	switch (event.getButton()) {
-        		case MouseEvent.BUTTON1:
-        			fireBullet();
-        			break;
-        		default:
-        			break;
-        	}
-    	}
-    }
+		@Override
+		public void mousePressed(MouseEvent event) {
+			switch (event.getButton()) {
+			case MouseEvent.BUTTON1:
+				fireBullet();
+				break;
+			default:
+				break;
+			}
+		}
+	}
 
 	public final class WindowsListener extends WindowAdapter {
 

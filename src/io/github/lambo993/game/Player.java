@@ -15,7 +15,7 @@ public final class Player implements Entity {
 	private int lifePoint;
 	private Main m;
 
-	protected Player(Main m) {
+	public Player(Main m) {
 		this.m = m;
 		setX(400);
 		setY(300);
@@ -101,6 +101,7 @@ public final class Player implements Entity {
 		if (isAlive() != alive) {
 			isAlive = alive;
 			if (!alive) {
+				setLife(0);
 				Main.playSound("/io/github/lambo993/game/sound/lost.wav");
 			}
 		}
@@ -151,6 +152,11 @@ public final class Player implements Entity {
 	@Override
 	public Rectangle getHitbox() {
 		return new Rectangle(getX(), getY(), 69, 42);
+	}
+
+	@Override
+	public EntityType getType() {
+		return EntityType.PLAYER;
 	}
 
 	@Override

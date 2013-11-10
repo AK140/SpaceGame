@@ -42,4 +42,6 @@ public interface Entity extends Runnable {
 	 * @return the Rectangle Size
 	 */
 	public Rectangle getHitbox();
+
+	public EntityType getType();
 }

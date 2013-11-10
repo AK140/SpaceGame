@@ -14,6 +14,6 @@ public class MainApplet extends JApplet {
 
 	@Override
 	public void start() {
-		new Thread(new Main("SuperSpaceShooter Applet", true)).start();
+		new Thread(new Main("Space Catastrophe Applet", true)).start();
 	}
 }

@@ -7,10 +7,7 @@ import java.util.Random;
 
 public class PowerUp implements Entity {
 
-	private int x;
-	private int y;
-	private int xVelocity;
-	private int yVelocity;
+	private int x, y, xVelocity, yVelocity;
 
 	public PowerUp() {
 		x = 400;
@@ -84,6 +81,11 @@ public class PowerUp implements Entity {
 	public Rectangle getHitbox() {
     	return new Rectangle(getX(), getY(), 7, 7);
     }
+
+	@Override
+	public EntityType getType() {
+		return EntityType.POWERUP;
+	}
 
 	@Override
 	public String toString() {

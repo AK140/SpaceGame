@@ -50,9 +50,8 @@ public class Enemy implements Entity {
 	}
 
 	@Override
-	public void draw(Graphics g) { //TODO: Get Own Graphics
-		g.setColor(Color.RED);
-		g.fillOval(getX(), getY(), 10, 10);
+	public void draw(Graphics g) {
+		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
 	}
 
 	@Override
@@ -77,7 +76,12 @@ public class Enemy implements Entity {
 
 	@Override
 	public Rectangle getHitbox() {
-		return new Rectangle(getX(), getY(), 10, 10);
+		return new Rectangle(getX(), getY(), 11, 11);
+	}
+
+	@Override
+	public EntityType getType() {
+		return EntityType.ENEMY;
 	}
 
 	@Override
