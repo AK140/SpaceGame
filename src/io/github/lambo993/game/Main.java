@@ -2,6 +2,7 @@ package io.github.lambo993.game;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -10,7 +11,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.7.7_Alpha
+ * @version 1.7.8_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -23,6 +24,9 @@ public final class Main extends JFrame implements Runnable {
 	private final ArrayList<PowerUp> powers;
 	private boolean isEnabled = false;
 	private int score = 0;
+	private int killedEnemy = 0;
+	private int powersCollected = 0;
+	private int bulletsShooted = 0;
 	private boolean screenShowed;
 	private static boolean isSoundMuted = false;
 	private static final int PRESS_PERIOD = 0x177;
@@ -86,6 +90,7 @@ public final class Main extends JFrame implements Runnable {
 						enemies.remove(i);
 						bullets.remove(j);
 						addScore(1);
+						killedEnemy++;
 					}
 				}
 			}
@@ -95,6 +100,7 @@ public final class Main extends JFrame implements Runnable {
 					playSound("/io/github/lambo993/game/sound/powerup.wav");
 					player.addLife(1);
 					addScore(1);
+					powersCollected++;
 				}
 			}
 			try {
@@ -113,7 +119,7 @@ public final class Main extends JFrame implements Runnable {
 		g.drawImage(dbImg, 0, 0, this);
 	}
 
-	public void draw(Graphics g) {
+	public void draw(final Graphics g) {
 		//TODO: Make better space-like background and moving it
 		g.drawImage(loadImage("/io/github/lambo993/game/images/BackGround.png"), 0, 0, this);
 		player.draw(g);
@@ -140,10 +146,35 @@ public final class Main extends JFrame implements Runnable {
 		if (screenShowed) {
 			g.drawString("x:", 735, 45);
 			g.drawString("y:", 735, 60);
+			g.drawString("b:", 735, 75);
+			g.drawString("e:", 735, 90);
 			g.drawString(Integer.toString(player.getX()), 760, 45);
 			g.drawString(Integer.toString(player.getY()), 760, 60);
+			g.drawString(Integer.toString(bullets.size()), 760, 75);
+			g.drawString(Integer.toString(enemies.size()), 760, 90);
 		}
-		repaint();
+		repaint(5);
+	}
+
+	/**
+	 * Loads an Image
+	 * @param path Path to the Image File
+	 * @param useDirectory true for load image in jar false for comp directory
+	 * @return the loaded <code>Image</code> object
+	 * @since version 1.7.8_Alpha
+	 */
+	public static Image loadImage(String path, boolean useDirectory) {
+		if (path == null) {
+			throw new IllegalArgumentException("path cannot be null!");
+		}
+		ImageIcon sid;
+		if (!useDirectory) {
+			sid = new ImageIcon(Main.class.getResource(path));
+			return sid.getImage();
+		} else {
+			sid = new ImageIcon(path);
+			return sid.getImage();
+		}
 	}
 
 	/**
@@ -153,11 +184,11 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.4_Alpha
 	 */
 	public static Image loadImage(String path) {
-		if (path == null) {
-			throw new IllegalArgumentException("path cannot be null!");
-		}
-		ImageIcon sid = new ImageIcon(Main.class.getResource(path));
-		return sid.getImage();
+		return loadImage(path, false);
+	}
+
+	public static void setMuted(boolean muted) {
+		isSoundMuted = muted;
 	}
 
 	/**
@@ -170,18 +201,17 @@ public final class Main extends JFrame implements Runnable {
 		try {
 			AudioInputStream audioIn = AudioSystem.getAudioInputStream(Main.class.getResource(path));
 			Clip clip = AudioSystem.getClip();
-			clip.open(audioIn);
 			if (isSoundMuted) {
 				clip.stop();
 				clip.flush();
 				clip.close();
 			} else {
-				clip.start();
+				clip.open(audioIn);
 				clip.loop(loop);
 			}
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
-			isSoundMuted = true;
+			setMuted(true);
 		}
 	}
 
@@ -200,6 +230,7 @@ public final class Main extends JFrame implements Runnable {
 	 * @param collidee The <code>Entity</code> Collidee
 	 * @return true If the Collider collides with the Collidee,
 	 * false if the collider/collidee is player and died
+	 * @since version 1.7.2_Alpha
 	 */
 	public static boolean collidesWith(Entity collider, Entity collidee) {
 		Rectangle hitBox1 = collider.getHitbox();
@@ -231,20 +262,21 @@ public final class Main extends JFrame implements Runnable {
 			return;
 		}
 		lastPressMs = System.currentTimeMillis();
-		shootBullet();
+		shootBullet(10);
 	}
 
-	private void shootBullet() {
-		if (bullets.size() < 10 && player.isAlive()) {
+	private void shootBullet(int spawnLimit) {
+		if (bullets.size() < spawnLimit && player.isAlive()) {
 			playSound("/io/github/lambo993/game/sound/bullet.wav");
 			Bullet b = new Bullet(player.getX() + 30, player.getY() - 12);
 			bullets.add(b);
 			Thread t = new Thread(b);
 			t.start();
+			bulletsShooted++;
 		}
 	}
 
-	private void spawnEnemy(int spawnLimit) {
+	protected void spawnEnemy(int spawnLimit) {
 		if (enemies.size() < spawnLimit && player.isAlive()) {
 			Enemy e = new Enemy();
 			enemies.add(e);
@@ -252,7 +284,7 @@ public final class Main extends JFrame implements Runnable {
 		}
 	}
 
-	private void spawnPowers(int spawnLimit) {
+	protected void spawnPowers(int spawnLimit) {
 		if (powers.size() < spawnLimit && player.isAlive()) {
 			PowerUp p = new PowerUp();
 			powers.add(p);
@@ -282,18 +314,19 @@ public final class Main extends JFrame implements Runnable {
 		System.out.println("Starting game...");
 		setIconImage(loadImage("/io/github/lambo993/game/images/Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
-		System.out.println("You are now running SuperSpaceShooter version 1.7.7_Alpha Developed by Lamboling Seans");
+		System.out.println("You are now running " + toString() + " version 1.7.8_Alpha Developed by Lamboling Seans");
 	}
 
 	private void onDisable() {
-		System.err.println("Closing game...");
-		isSoundMuted = false;
+		System.out.println("Closing game...");
+		saveStats();
+		setMuted(true);
 		screenShowed = false;
 		setScore(0);
 		player.setX(0);
 		player.setY(0);
-		player.xVelocity = 0;
-		player.yVelocity = 0;
+		player.setXVelocity(0);
+		player.setYVelocity(0);
 		enemies.removeAll(enemies);
 		bullets.removeAll(bullets);
 		powers.removeAll(powers);
@@ -318,11 +351,14 @@ public final class Main extends JFrame implements Runnable {
 		bullets.removeAll(bullets);
 		player.setLife(3);
 		player.setAlive(true);
+		bulletsShooted = 0;
+		killedEnemy = 0;
+		powersCollected = 0;
 		setScore(0);
 		player.setX(400);
 		player.setY(300);
-		player.xVelocity = 0;
-		player.yVelocity = 0;
+		player.setXVelocity(0);
+		player.setYVelocity(0);
 	}
 
 	/**
@@ -375,6 +411,66 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	/**
+	 * <p>Save stats last stats to a file</p>
+	 * (Credit goes to Wilee999 for the method example)
+	 * @author Wilee999
+	 * @since version 1.7.8_Alpha
+	 */
+	public void saveStats() {
+		try {
+			File dir = new File("Space Catastrophe");
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+			File file = new File(dir, "Stats.txt");
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write("Here's the previous stats");
+			bw.newLine();
+			bw.write("Score: " + getScore());
+			bw.newLine();
+			bw.write("Life: " + player.getLife());
+			bw.newLine();
+			bw.write("Bullets Shooted: " + bulletsShooted);
+			bw.newLine();
+			bw.write("Killed Enemy: " + killedEnemy);
+			bw.newLine();
+			bw.write("PowerUps Collected: " + powersCollected);
+			bw.newLine();
+			bw.write("X: " + player.getX());
+			bw.newLine();
+			bw.write("Y: " + player.getY());
+			bw.close();
+		} catch (IOException e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Writes a crash report to a file if the game got an exception
+	 * @param t The error that's be checked
+	 * @deprecated Still finding a way where to check the error
+	 */
+	@Deprecated
+	public static void crashReport(Throwable t) {
+		try {
+			File dir = new File("Space Catastrophe");
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+			File file = new File(dir, "crash-" + Calendar.YEAR + "-" + Calendar.MONTH + ".txt");
+			PrintStream out = new PrintStream(file);
+			t.printStackTrace(out);
+		} catch (IOException e) {
+			System.exit(0);
+		}
+	}
+
+	/**
 	 * The Main method.
 	 * @param args the JVM Arguments
 	 * @since version 0.1_Alpha
@@ -382,7 +478,7 @@ public final class Main extends JFrame implements Runnable {
 	public static final void main(final String[] args) {
 		Main m = new Main("Space Catastrophe", true);
 		new Thread(m).start();
-		while (m.isEnabled()) {
+		do {
 			m.spawnEnemy(15);
 			m.spawnPowers(1);
 			try {
@@ -390,12 +486,12 @@ public final class Main extends JFrame implements Runnable {
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
-		}
+		} while (m.isEnabled());
 	}
 
 	@Override
 	public String toString() {
-		return "Game";
+		return "The Amazing Space Catastrophe";
 	}
 
 	/**
@@ -403,25 +499,26 @@ public final class Main extends JFrame implements Runnable {
 	 * @author Lamboling Seans
 	 * @since version 0.3_Alpha
 	 */
-	private class KeyListenerEvent extends KeyAdapter {
+	protected class KeyListenerEvent extends KeyAdapter {
+
 		@Override
 		public void keyPressed(KeyEvent event) {
 			switch (event.getKeyCode()) {
 			case KeyEvent.VK_UP:
 			case KeyEvent.VK_W:
-				player.yVelocity = -2;
+				player.setYVelocity(-2);
 				break;
 			case KeyEvent.VK_DOWN:
 			case KeyEvent.VK_S:
-				player.yVelocity = 2;
+				player.setYVelocity(2);
 				break;
 			case KeyEvent.VK_LEFT:
 			case KeyEvent.VK_A:
-				player.xVelocity = -2;
+				player.setXVelocity(-2);
 				break;
 			case KeyEvent.VK_RIGHT:
 			case KeyEvent.VK_D:
-				player.xVelocity = 2;
+				player.setXVelocity(2);
 				break;
 			case KeyEvent.VK_R:
 				onReset();
@@ -440,10 +537,10 @@ public final class Main extends JFrame implements Runnable {
 				break;
 			case KeyEvent.VK_F8:
 				if (isSoundMuted) {
-					isSoundMuted = false;
+					setMuted(false);
 					System.out.println("Unmuted");
 				} else {
-					isSoundMuted = true;
+					setMuted(true);
 					System.out.println("Mutted");
 				}
 				break;
@@ -462,13 +559,13 @@ public final class Main extends JFrame implements Runnable {
 			case KeyEvent.VK_W:
 			case KeyEvent.VK_DOWN:
 			case KeyEvent.VK_S:
-				player.yVelocity = 0;
+				player.setYVelocity(0);
 				break;
 			case KeyEvent.VK_LEFT:
 			case KeyEvent.VK_A:
 			case KeyEvent.VK_RIGHT:
 			case KeyEvent.VK_D:
-				player.xVelocity = 0;
+				player.setXVelocity(0);
 				break;
 			default:
 				break;
@@ -481,7 +578,7 @@ public final class Main extends JFrame implements Runnable {
 	 * @author Lamboling Seans
 	 * @since version 0.7_Alpha
 	 */
-	private class MouseListenerEvent extends MouseAdapter {
+	protected class MouseListenerEvent extends MouseAdapter {
 
 		@Override
 		public void mousePressed(MouseEvent event) {
@@ -495,7 +592,7 @@ public final class Main extends JFrame implements Runnable {
 		}
 	}
 
-	public final class WindowsListener extends WindowAdapter {
+	private final class WindowsListener extends WindowAdapter {
 
 		@Override
 		public void windowClosing(WindowEvent event) {

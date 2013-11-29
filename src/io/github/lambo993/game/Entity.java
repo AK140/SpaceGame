@@ -4,7 +4,7 @@ import java.awt.*;
 
 /**
  * An interface for Entity methods
- * @author Lambo993
+ * @author Lamboling Seans
  * @since version 1.4_Alpha
  */
 public interface Entity extends Runnable {
@@ -33,8 +33,16 @@ public interface Entity extends Runnable {
 	 */
 	public int getY();
 
+	/**
+	 * Sets the <code>Entity</code> X coordinate of the screen
+	 * @param x the new X Location of the screen
+	 */
 	public void setX(int x);
 
+	/**
+	 * Sets the <code>Entity</code> Y coordinate of the screen
+	 * @param y the new Y Location of the screen
+	 */
 	public void setY(int y);
 
 	/**

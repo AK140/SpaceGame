@@ -9,8 +9,7 @@ import java.awt.*;
  */
 public final class Player implements Entity {
 
-	private int x, y;
-	protected int xVelocity, yVelocity;
+	private int x, y, xVelocity, yVelocity;
 	private boolean isAlive;
 	private int lifePoint;
 	private Main m;
@@ -19,9 +18,9 @@ public final class Player implements Entity {
 		this.m = m;
 		setX(400);
 		setY(300);
-		xVelocity = 0;
-		yVelocity = 0;
-		lifePoint = 3;
+		setXVelocity(0);
+		setYVelocity(0);
+		setLife(3);
 		setAlive(true);
 	}
 
@@ -61,8 +60,7 @@ public final class Player implements Entity {
 	public void draw(Graphics g) {
 		if (isAlive()) {
 			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
-		}
-		if (!isAlive()) {
+		} else {
         	g.drawString("You Died!", 400, 300);
         	g.drawString("Press \"R\" To Try Again!", 350, 325);
         }
@@ -73,9 +71,17 @@ public final class Player implements Entity {
 		return x;
 	}
 
+	public int getXVelocity() {
+		return xVelocity;
+	}
+
 	@Override
 	public int getY() {
 		return y;
+	}
+
+	public int getYVelocity() {
+		return yVelocity;
 	}
 
 	@Override
@@ -83,9 +89,17 @@ public final class Player implements Entity {
 		this.x = x;
 	}
 
+	public void setXVelocity(int xVelocity) {
+		this.xVelocity = xVelocity;
+	}
+
 	@Override
 	public void setY(int y) {
 		this.y = y;
+	}
+
+	public void setYVelocity(int yVelocity) {
+		this.yVelocity = yVelocity;
 	}
 
 	/**
@@ -97,18 +111,25 @@ public final class Player implements Entity {
 		return isAlive;
 	}
 
+	/**
+	 * Sets the player alive or not
+	 * @param alive Set to true to make the player alive, false for died
+	 * @since version 1.5_Alpha
+	 */
 	public void setAlive(final boolean alive) {
 		if (isAlive() != alive) {
 			isAlive = alive;
 			if (!alive) {
 				setLife(0);
 				Main.playSound("/io/github/lambo993/game/sound/lost.wav");
+			} else {
+				setLife(3);
 			}
 		}
 	}
 
 	/**
-	 * Gets the player current life
+	 * Gets the player current LifePoint
 	 * @return The Players Life
 	 */
 	public int getLife() {

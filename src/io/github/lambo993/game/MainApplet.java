@@ -14,6 +14,16 @@ public class MainApplet extends JApplet {
 
 	@Override
 	public void start() {
-		new Thread(new Main("Space Catastrophe Applet", true)).start();
+		Main m = new Main("Space Catastrophe Applet", true); //TODO: Improve Applet
+		new Thread(m).start();
+		do {
+			m.spawnEnemy(15);
+			m.spawnPowers(1);
+			try {
+				Thread.sleep(3 * 1000);
+			} catch (InterruptedException ex) {
+				System.err.println("Error: Thread Interrupted.");
+			}
+		} while (m.isEnabled());
 	}
 }

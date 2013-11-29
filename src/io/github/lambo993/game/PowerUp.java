@@ -10,8 +10,8 @@ public class PowerUp implements Entity {
 	private int x, y, xVelocity, yVelocity;
 
 	public PowerUp() {
-		x = 400;
-		y = 50;
+		setX(400);
+		setY(50);
 		Random rng = new Random();
 		xVelocity = -1 + rng.nextInt(3);
 		yVelocity = -1 + rng.nextInt(3);
@@ -26,10 +26,10 @@ public class PowerUp implements Entity {
 		while (true) {
 			move(0, 0, 790, 590);
 			try {
-                Thread.sleep(5);
-            } catch (InterruptedException ex) {
-                System.err.println("Error: Thread Interrupted.");
-            }
+				Thread.sleep(5);
+			} catch (InterruptedException ex) {
+				System.err.println("Error: Thread Interrupted.");
+			}
 		}
 	}
 
@@ -79,8 +79,8 @@ public class PowerUp implements Entity {
 
 	@Override
 	public Rectangle getHitbox() {
-    	return new Rectangle(getX(), getY(), 7, 7);
-    }
+		return new Rectangle(getX(), getY(), 7, 7);
+	}
 
 	@Override
 	public EntityType getType() {

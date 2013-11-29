@@ -1,5 +1,9 @@
 package io.github.lambo993.game;
 
+/**
+ * Currently unusued hopefully to be used soon
+ * @author Lamboling Seans
+ */
 public enum EntityType {
 
 	UNKNOWN(null, null, -1),

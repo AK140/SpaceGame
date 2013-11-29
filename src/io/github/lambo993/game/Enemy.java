@@ -8,16 +8,16 @@ public class Enemy implements Entity {
 	private int x, y, xVelocity, yVelocity;
 
 	public Enemy() {
-        setX(400);
-        setY(50);
-        Random rng = new Random();
-        xVelocity = -1 + rng.nextInt(3);
-        yVelocity = -1 + rng.nextInt(3);
-        if (xVelocity == 0 && yVelocity == 0) {
-            xVelocity = 1;
-            yVelocity = 1;
-        }
-    }
+		setX(400);
+		setY(50);
+		Random rng = new Random();
+		xVelocity = -1 + rng.nextInt(3);
+		yVelocity = -1 + rng.nextInt(3);
+		if (xVelocity == 0 && yVelocity == 0) {
+			xVelocity = 1;
+			yVelocity = 1;
+		}
+	}
 
 	@Override
 	public void run() {

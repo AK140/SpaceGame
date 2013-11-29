@@ -21,13 +21,13 @@ public class Bullet implements Entity {
 	@Override
 	public void run() {
 		while (true) {
-        	move(0, 0, 0, 0);
-            try {
-            	Thread.sleep(5);
-            } catch (InterruptedException ex) {
-            	System.err.println("Error: Thread Interrupted.");
-            }
-        }
+			move(0, 0, 0, 0);
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException ex) {
+				System.err.println("Error: Thread Interrupted.");
+			}
+		}
 	}
 
 	@Override
@@ -42,13 +42,13 @@ public class Bullet implements Entity {
 	 * @since version 0.5_Alpha
 	 */
 	public boolean isOffScreen() {
-		return getY() < 0;
+		return getY() < 0 || getY() > 560;
 	}
 
 	@Override
-    public void draw(Graphics g) {
+	public void draw(Graphics g) {
 		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Bullet.gif"), getX(), getY(), new Main());
-    }
+	}
 
 	@Override
 	public int getX() {
@@ -71,9 +71,9 @@ public class Bullet implements Entity {
 	}
 
 	@Override
-    public Rectangle getHitbox() {
-    	return new Rectangle(getX(), getY() + 3, 10, 21);
-    }
+	public Rectangle getHitbox() {
+		return new Rectangle(getX(), getY() + 3, 10, 21);
+	}
 
 	@Override
 	public EntityType getType() {
