@@ -3,6 +3,11 @@ package io.github.lambo993.game;
 import java.awt.*;
 import java.util.Random;
 
+/**
+ * The <code>Enemy</code> Entity
+ * @author Lamboling Seans
+ * @since version 0.7_Alpha
+ */
 public class Enemy implements Entity {
 
 	private int x, y, xVelocity, yVelocity;
@@ -59,9 +64,17 @@ public class Enemy implements Entity {
 		return x;
 	}
 
+	public int getXVelocity() {
+		return xVelocity;
+	}
+
 	@Override
 	public int getY() {
 		return y;
+	}
+
+	public int getYVelocity() {
+		return yVelocity;
 	}
 
 	@Override
@@ -69,9 +82,17 @@ public class Enemy implements Entity {
 		this.x = x;
 	}
 
+	public void setXVelocity(int xVelocity) {
+		this.xVelocity = xVelocity;
+	}
+
 	@Override
 	public void setY(int y) {
 		this.y = y;
+	}
+
+	public void setYVelocity(int yVelocity) {
+		this.yVelocity = yVelocity;
 	}
 
 	@Override

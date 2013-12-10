@@ -4,7 +4,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * 
+ * The <code>Bullet</code> Entity
  * @author Lamboling Seans
  * @since version 0.5_Alpha
  */

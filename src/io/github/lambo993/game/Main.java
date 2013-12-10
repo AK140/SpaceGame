@@ -11,7 +11,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.7.8_Alpha
+ * @version 1.7.9_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -278,9 +278,17 @@ public final class Main extends JFrame implements Runnable {
 
 	protected void spawnEnemy(int spawnLimit) {
 		if (enemies.size() < spawnLimit && player.isAlive()) {
-			Enemy e = new Enemy();
-			enemies.add(e);
-			new Thread(e).start();
+			Random rng = new Random();
+			int chance = rng.nextInt();
+			if ((chance % 2) == 0) {
+				SmartEnemy se = new SmartEnemy(player);
+				enemies.add(se);
+				new Thread(se).start();
+			} else {
+				Enemy e = new Enemy();
+				enemies.add(e);
+				new Thread(e).start();
+			}
 		}
 	}
 
@@ -312,6 +320,14 @@ public final class Main extends JFrame implements Runnable {
 
 	private void onEnable() {
 		System.out.println("Starting game...");
+		System.setProperty("spacecatastrophe.version", "1.7.9_Alpha");
+		System.setProperty("spacecatastrophe.author", "Lambo993");
+		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
+				JOptionPane.DEFAULT_OPTION);
+		if (i == -1) {
+			System.exit(1);
+			return;
+		}
 		setIconImage(loadImage("/io/github/lambo993/game/images/Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		System.out.println("You are now running " + toString() + " version 1.7.8_Alpha Developed by Lamboling Seans");
@@ -426,27 +442,19 @@ public final class Main extends JFrame implements Runnable {
 			if (!file.exists()) {
 				file.createNewFile();
 			}
-			FileWriter fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write("Here's the previous stats");
-			bw.newLine();
-			bw.write("Score: " + getScore());
-			bw.newLine();
-			bw.write("Life: " + player.getLife());
-			bw.newLine();
-			bw.write("Bullets Shooted: " + bulletsShooted);
-			bw.newLine();
-			bw.write("Killed Enemy: " + killedEnemy);
-			bw.newLine();
-			bw.write("PowerUps Collected: " + powersCollected);
-			bw.newLine();
-			bw.write("X: " + player.getX());
-			bw.newLine();
-			bw.write("Y: " + player.getY());
-			bw.close();
-		} catch (IOException e) {
-			System.err.println("Error: " + e.getMessage());
-			e.printStackTrace();
+			PrintStream out = new PrintStream(file);
+			out.println("Here's the previous stats");
+			out.println("Score: " + getScore());
+			out.println("Life: " + player.getLife());
+			out.println("Bullets Shooted: " + bulletsShooted);
+			out.println("Killed Enemy: " + killedEnemy);
+			out.println("PowerUps Collected: " + powersCollected);
+			out.println("X: " + player.getX());
+			out.println("Y: " + player.getY());
+			out.close();
+		} catch (IOException ex) {
+			System.err.println("Error: " + ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
 
@@ -462,9 +470,10 @@ public final class Main extends JFrame implements Runnable {
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
-			File file = new File(dir, "crash-" + Calendar.YEAR + "-" + Calendar.MONTH + ".txt");
-			PrintStream out = new PrintStream(file);
-			t.printStackTrace(out);
+			File file = new File(dir, "crash-report.txt");
+			PrintStream err = new PrintStream(file);
+			err.println(t.getMessage());
+			t.printStackTrace(err);
 		} catch (IOException e) {
 			System.exit(0);
 		}
@@ -545,6 +554,10 @@ public final class Main extends JFrame implements Runnable {
 				}
 				break;
 			case KeyEvent.VK_ESCAPE:
+				int i = JOptionPane.showConfirmDialog(Main.this, "Close Game?", Main.this.toString(), JOptionPane.YES_NO_OPTION);
+				if (i == 1 || i == -1) {
+					return;
+				}
 				setEnabled(false);
 				break;
 			default:

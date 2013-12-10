@@ -13,6 +13,11 @@ public class MainApplet extends JApplet {
 	private static final long serialVersionUID = -8906798179739115470L;
 
 	@Override
+	public void init() {
+		setSize(800, 600);
+	}
+
+	@Override
 	public void start() {
 		Main m = new Main("Space Catastrophe Applet", true); //TODO: Improve Applet
 		new Thread(m).start();

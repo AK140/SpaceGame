@@ -48,6 +48,7 @@ public interface Entity extends Runnable {
 	/**
 	 * Get's the size of the hit box
 	 * @return the Rectangle Size
+	 * @since version 0.7_Alpha
 	 */
 	public Rectangle getHitbox();
 
