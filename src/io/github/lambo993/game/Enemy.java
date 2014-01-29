@@ -59,6 +59,10 @@ public class Enemy implements Entity {
 		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
 	}
 
+	public boolean isSmart() {
+		return this instanceof SmartEnemy;
+	}
+
 	@Override
 	public int getX() {
 		return x;
