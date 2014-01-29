@@ -77,19 +77,28 @@ public final class Main extends JFrame implements Runnable {
 					bullets.remove(i);
 			}
 			for (int i = 0; i < enemies.size(); i++) {
-				if (collidesWith(player, enemies.get(i))) {
+				Enemy e = enemies.get(i);
+				if (collidesWith(player, e)) {
 					playSound("/io/github/lambo993/game/sound/enemy.wav");
 					enemies.remove(i);
 					player.removeLife(1);
+					if (!e.isSmart()) {
+						removeScore(1);
+					}
 				}
 			}
 			for (int i = enemies.size() - 1; i >= 0; i--) {
 				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
-					if (collidesWith(bullets.get(j), enemies.get(i))) {
+					Enemy e = enemies.get(i);
+					if (collidesWith(bullets.get(j), e)) {
 						playSound("/io/github/lambo993/game/sound/hit.wav");
 						enemies.remove(i);
 						bullets.remove(j);
-						addScore(1);
+						if (e.isSmart()) {
+							addScore(2);
+						} else {
+							addScore(1);
+						}
 						killedEnemy++;
 					}
 				}
