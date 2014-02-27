@@ -31,6 +31,9 @@ public final class Main extends JFrame implements Runnable {
 	private static boolean isSoundMuted = false;
 	private static final int PRESS_PERIOD = 0x177;
 	private long lastPressMs = 0;
+	private static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
+	private static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
+	private static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
 
 	/**
 	 * Construct a Windowless <code>Main</code>.
@@ -84,6 +87,10 @@ public final class Main extends JFrame implements Runnable {
 					player.removeLife(1);
 					if (!e.isSmart()) {
 						removeScore(1);
+					} else {
+						if (e.getY() > player.getY()) {
+							ACHIEVE1.unlock();
+						}
 					}
 				}
 			}
@@ -107,13 +114,22 @@ public final class Main extends JFrame implements Runnable {
 				if (collidesWith(player, powers.get(i))) {
 					powers.remove(i);
 					playSound("/io/github/lambo993/game/sound/powerup.wav");
+					if (player.getLife() == 3) {
+						addScore(1);
+					}
 					player.addLife(1);
-					addScore(1);
 					powersCollected++;
 				}
 			}
+			for (int i = 0; i < powers.size(); i++) {
+				for (int j = 0; j < bullets.size(); j++) {
+					if (collidesWith(bullets.get(j), powers.get(i))) {
+						ACHIEVE2.unlock();
+					}
+				}
+			}
 			try {
-				Thread.sleep(5);
+				sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
@@ -233,6 +249,10 @@ public final class Main extends JFrame implements Runnable {
 		playSound(path, 0);
 	}
 
+	public static void sleep() throws InterruptedException {
+		Thread.sleep(5);
+	}
+
 	/**
 	 * Checks if an <code>Entity</code> Collided with another <code>Entity</code>
 	 * @param collider The <code>Entity</code> Collider
@@ -282,6 +302,12 @@ public final class Main extends JFrame implements Runnable {
 			Thread t = new Thread(b);
 			t.start();
 			bulletsShooted++;
+			for (int i = 0; i < enemies.size(); i++) {
+				Enemy e = enemies.get(i);
+				if (e.isSmart() && b.getX() == e.getX() && b.getY() > e.getY()) {
+					//TODO: Make smart enemy able to dodge bullets and ignore the player for a moment
+				}
+			}
 		}
 	}
 
@@ -317,7 +343,11 @@ public final class Main extends JFrame implements Runnable {
 			if (isEnabled) {
 				onEnable();
 			} else {
-				onDisable();
+				try {
+					onDisable();
+				} catch (Exception e) {
+					System.exit(0);
+				}
 			}
 		}
 	}
@@ -342,7 +372,7 @@ public final class Main extends JFrame implements Runnable {
 		System.out.println("You are now running " + toString() + " version 1.7.8_Alpha Developed by Lamboling Seans");
 	}
 
-	private void onDisable() {
+	private void onDisable() throws Exception {
 		System.out.println("Closing game...");
 		saveStats();
 		setMuted(true);
@@ -436,7 +466,7 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	/**
-	 * <p>Save stats last stats to a file</p>
+	 * <p>Save the last stats to a file</p>
 	 * (Credit goes to Wilee999 for the method example)
 	 * @author Wilee999
 	 * @since version 1.7.8_Alpha
@@ -460,6 +490,16 @@ public final class Main extends JFrame implements Runnable {
 			out.println("PowerUps Collected: " + powersCollected);
 			out.println("X: " + player.getX());
 			out.println("Y: " + player.getY());
+			out.println("Achievements Unlocked:");
+			if (ACHIEVE1.isUnlocked()) {
+				out.println(ACHIEVE1.getName());
+			} if (ACHIEVE2.isUnlocked()) {
+				out.println(ACHIEVE2.getName());
+			} if (ACHIEVE3.isUnlocked()) {
+				out.println(ACHIEVE3.getName());
+			} else if (!ACHIEVE1.isUnlocked() && !ACHIEVE2.isUnlocked() && !ACHIEVE3.isUnlocked()) {
+				out.println("None");
+			}
 			out.close();
 		} catch (IOException ex) {
 			System.err.println("Error: " + ex.getMessage());
@@ -607,6 +647,9 @@ public final class Main extends JFrame implements Runnable {
 			switch (event.getButton()) {
 			case MouseEvent.BUTTON1:
 				fireBullet();
+				break;
+			case MouseEvent.BUTTON3:
+				ACHIEVE3.unlock();
 				break;
 			default:
 				break;
