@@ -1,5 +1,7 @@
 package io.github.lambo993.game;
 
+import java.awt.Graphics;
+
 /**
  * Same as enemy but follow the player movements
  * @author Lamboling Seans
@@ -32,10 +34,15 @@ public class SmartEnemy extends Enemy {
 				move(0, 5, 790, 590);
 			}
 			try {
-				Thread.sleep(5);
+				Main.sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
 		}
+	}
+
+	@Override
+	public void draw(Graphics g) {
+		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
 	}
 }
