@@ -2,12 +2,13 @@ package io.github.lambo993.game;
 
 /**
  * @author Lamboling Seans
- * @deprecated Still in testing and doesn't have an idea for achievements yet
  */
-@Deprecated
 public enum Achievements {
 
-	UNKNOWN(-1, null);
+	UNKNOWN(-1, null),
+	BACK_WAY(1, "Back Way: Got ambused by an enemy from back of the ship"),
+	MY_LOVE(2, "My Love: Shoots a power up"),
+	RIGHT_CLICK(3, "Right Clicked: It wont do anything anyway");
 
 	private int id;
 	private String name;
