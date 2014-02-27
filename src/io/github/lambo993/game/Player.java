@@ -29,7 +29,7 @@ public final class Player implements Entity {
 		while (m.isEnabled()) {
 			move(0, 20, 740, 560);
 			try {
-				Thread.sleep(5);
+				Main.sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
@@ -61,9 +61,9 @@ public final class Player implements Entity {
 		if (isAlive()) {
 			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
 		} else {
-        	g.drawString("You Died!", 400, 300);
-        	g.drawString("Press \"R\" To Try Again!", 350, 325);
-        }
+			g.drawString("You Died!", 400, 300);
+			g.drawString("Press \"R\" To Try Again!", 350, 325);
+		}
 	}
 
 	@Override
