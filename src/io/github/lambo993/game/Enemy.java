@@ -29,7 +29,7 @@ public class Enemy implements Entity {
 		while (true) {
 			move(0, 5, 790, 590);
 			try {
-				Thread.sleep(5);
+				Main.sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
@@ -56,7 +56,8 @@ public class Enemy implements Entity {
 
 	@Override
 	public void draw(Graphics g) {
-		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
+		g.setColor(Color.ORANGE);
+		g.fillOval(getX(), getY(), 11, 11);
 	}
 
 	public boolean isSmart() {
