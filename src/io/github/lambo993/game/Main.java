@@ -1,8 +1,10 @@
 package io.github.lambo993.game;
 
+import io.github.lambo993.game.entity.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -11,7 +13,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.7.9_Alpha
+ * @version 1.8.2_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -28,6 +30,7 @@ public final class Main extends JFrame implements Runnable {
 	private int powersCollected = 0;
 	private int bulletsShooted = 0;
 	private boolean screenShowed;
+	private static boolean isPaused = false;
 	private static boolean isSoundMuted = false;
 	private static final int PRESS_PERIOD = 0x177;
 	private long lastPressMs = 0;
@@ -82,15 +85,15 @@ public final class Main extends JFrame implements Runnable {
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				if (collidesWith(player, e)) {
-					playSound("/io/github/lambo993/game/sound/enemy.wav");
+					playSound("/io/github/lambo993/game/sound/explosion.wav");
 					enemies.remove(i);
 					player.removeLife(1);
-					if (!e.isSmart()) {
-						removeScore(1);
-					} else {
+					if (e.isSmart()) {
 						if (e.getY() > player.getY()) {
 							ACHIEVE1.unlock();
 						}
+					} else {
+						removeScore(1);
 					}
 				}
 			}
@@ -173,10 +176,19 @@ public final class Main extends JFrame implements Runnable {
 			g.drawString("y:", 735, 60);
 			g.drawString("b:", 735, 75);
 			g.drawString("e:", 735, 90);
+			g.drawString("gcmax:", 707, 105);
+			g.drawString("gctotal:", 693, 120);
+			g.drawString("gcfree:", 700, 135);
 			g.drawString(Integer.toString(player.getX()), 760, 45);
 			g.drawString(Integer.toString(player.getY()), 760, 60);
 			g.drawString(Integer.toString(bullets.size()), 760, 75);
 			g.drawString(Integer.toString(enemies.size()), 760, 90);
+			long max = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+			long total = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+			long free = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+			g.drawString(Long.toString(max), 760, 105);
+			g.drawString(Long.toString(total), 760, 120);
+			g.drawString(Long.toString(free), 760, 135);
 		}
 		repaint(5);
 	}
@@ -192,13 +204,13 @@ public final class Main extends JFrame implements Runnable {
 		if (path == null) {
 			throw new IllegalArgumentException("path cannot be null!");
 		}
-		ImageIcon sid;
+		ImageIcon img;
 		if (!useDirectory) {
-			sid = new ImageIcon(Main.class.getResource(path));
-			return sid.getImage();
+			img = new ImageIcon(Main.class.getResource(path));
+			return img.getImage();
 		} else {
-			sid = new ImageIcon(path);
-			return sid.getImage();
+			img = new ImageIcon(path);
+			return img.getImage();
 		}
 	}
 
@@ -290,7 +302,7 @@ public final class Main extends JFrame implements Runnable {
 		if (System.currentTimeMillis() - lastPressMs < PRESS_PERIOD) {
 			return;
 		}
-		lastPressMs = System.currentTimeMillis();
+		lastPressMs = System.currentTimeMillis(); //FIXME: Pausing doesn't pause the bullet shooting time limit
 		shootBullet(10);
 	}
 
@@ -304,8 +316,15 @@ public final class Main extends JFrame implements Runnable {
 			bulletsShooted++;
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
-				if (e.isSmart() && b.getX() == e.getX() && b.getY() > e.getY()) {
-					//TODO: Make smart enemy able to dodge bullets and ignore the player for a moment
+				if (e.isSmart() && b.getX() == e.getX() && b.getY() > e.getY() && !e.isIgnoring()) {
+					e.setIgnoring(true);
+					Random rng = new Random();
+					int chance = rng.nextInt();
+					if ((chance % 2) == 0) {
+						e.setXVelocity(1);
+					} else {
+						e.setXVelocity(-1);
+					}
 				}
 			}
 		}
@@ -313,8 +332,8 @@ public final class Main extends JFrame implements Runnable {
 
 	protected void spawnEnemy(int spawnLimit) {
 		if (enemies.size() < spawnLimit && player.isAlive()) {
-			Random rng = new Random();
-			int chance = rng.nextInt();
+			Random r = new Random();
+			int chance = r.nextInt();
 			if ((chance % 2) == 0) {
 				SmartEnemy se = new SmartEnemy(player);
 				enemies.add(se);
@@ -346,6 +365,8 @@ public final class Main extends JFrame implements Runnable {
 				try {
 					onDisable();
 				} catch (Exception e) {
+					System.err.println("Error on disabling forcing close");
+					e.printStackTrace();
 					System.exit(0);
 				}
 			}
@@ -359,7 +380,7 @@ public final class Main extends JFrame implements Runnable {
 
 	private void onEnable() {
 		System.out.println("Starting game...");
-		System.setProperty("spacecatastrophe.version", "1.7.9_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.2_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
 		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
 				JOptionPane.DEFAULT_OPTION);
@@ -369,14 +390,14 @@ public final class Main extends JFrame implements Runnable {
 		}
 		setIconImage(loadImage("/io/github/lambo993/game/images/Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
-		System.out.println("You are now running " + toString() + " version 1.7.8_Alpha Developed by Lamboling Seans");
+		System.out.println("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
 	private void onDisable() throws Exception {
-		System.out.println("Closing game...");
-		saveStats();
 		setMuted(true);
 		screenShowed = false;
+		saveStats();
+		System.out.println("Closing game...");
 		setScore(0);
 		player.setX(0);
 		player.setY(0);
@@ -385,8 +406,7 @@ public final class Main extends JFrame implements Runnable {
 		enemies.removeAll(enemies);
 		bullets.removeAll(bullets);
 		powers.removeAll(powers);
-		Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
-		setCursor(cursor);
+		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		setTitle("");
 		setBackground(Color.WHITE);
 		setIconImage(null);
@@ -414,6 +434,32 @@ public final class Main extends JFrame implements Runnable {
 		player.setY(300);
 		player.setXVelocity(0);
 		player.setYVelocity(0);
+	}
+
+	private void setPaused(boolean paused) {
+		if (isPaused() != paused) {
+			isPaused = paused;
+			player.setPaused(paused);
+			for (int i = 0; i < enemies.size(); i++) {
+				Enemy e = enemies.get(i);
+				e.setPaused(paused);
+				if (e.isSmart()) {
+					new Thread(e).start();
+				}
+			}
+			for (int i = 0; i < bullets.size(); i++) {
+				Bullet b = bullets.get(i);
+				b.setPaused(paused);
+			}
+			for (int i = 0; i < powers.size(); i++) {
+				PowerUp p = powers.get(i);
+				p.setPaused(paused);
+			}
+		}
+	}
+
+	public static boolean isPaused() {
+		return isPaused;
 	}
 
 	/**
@@ -473,6 +519,11 @@ public final class Main extends JFrame implements Runnable {
 	 */
 	public void saveStats() {
 		try {
+			int i = JOptionPane.showConfirmDialog(null, "Save the stats?", toString(),
+					JOptionPane.YES_NO_OPTION);
+			if (i == 1 || i == -1) {
+				return;
+			}
 			File dir = new File("Space Catastrophe");
 			if (!dir.exists()) {
 				dir.mkdir();
@@ -501,6 +552,7 @@ public final class Main extends JFrame implements Runnable {
 				out.println("None");
 			}
 			out.close();
+			System.out.println("Stats saved!");
 		} catch (IOException ex) {
 			System.err.println("Error: " + ex.getMessage());
 			ex.printStackTrace();
@@ -534,13 +586,35 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 0.1_Alpha
 	 */
 	public static final void main(final String[] args) {
+		if (args.length == 1 && args[0].equalsIgnoreCase("-server")) {
+			JOptionPane.showMessageDialog(null, "The server feature supposed to be hidden!");
+			try {
+				InetAddress address = InetAddress.getByName(JOptionPane.showInputDialog("Enter ip address"));
+				int port = Integer.parseInt(JOptionPane.showInputDialog("Enter port"));
+				Socket server = new Socket(address, port);
+				if (server.isConnected()) {
+					System.out.println("Connected to " + server.getInetAddress().getHostName() + ":" + port);
+				}
+				server.close();
+			} catch (UnknownHostException ex) {
+				ex.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Unknown host", "java.net.UnkownHostException", JOptionPane.ERROR_MESSAGE);
+				System.exit(0);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				System.exit(0);
+			}
+		}
 		Main m = new Main("Space Catastrophe", true);
 		new Thread(m).start();
 		do {
-			m.spawnEnemy(15);
-			m.spawnPowers(1);
+			if (!isPaused()) {
+				m.spawnEnemy(15);
+				m.spawnPowers(1);
+			}
 			try {
-				Thread.sleep(3 * 1000);
+				Thread.sleep(3 * 1000); //FIXME: Pausing or restart doesn't restart or pause the timings
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
@@ -603,8 +677,10 @@ public final class Main extends JFrame implements Runnable {
 				}
 				break;
 			case KeyEvent.VK_ESCAPE:
-				int i = JOptionPane.showConfirmDialog(Main.this, "Close Game?", Main.this.toString(), JOptionPane.YES_NO_OPTION);
+				setPaused(true);
+				int i = JOptionPane.showConfirmDialog(Main.this, "Paused\nClose Game?", Main.this.toString(), JOptionPane.YES_NO_OPTION);
 				if (i == 1 || i == -1) {
+					setPaused(false);
 					return;
 				}
 				setEnabled(false);
@@ -661,6 +737,7 @@ public final class Main extends JFrame implements Runnable {
 
 		@Override
 		public void windowClosing(WindowEvent event) {
+			setPaused(true);
 			setEnabled(false);
 		}
 	}

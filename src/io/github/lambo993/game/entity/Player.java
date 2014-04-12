@@ -1,5 +1,6 @@
-package io.github.lambo993.game;
+package io.github.lambo993.game.entity;
 
+import io.github.lambo993.game.Main;
 import java.awt.*;
 
 /**
@@ -7,9 +8,9 @@ import java.awt.*;
  * @author Lamboling Seans
  * @since version 1.7.6_Alpha
  */
-public final class Player implements Entity {
+public final class Player extends Entity {
 
-	private int x, y, xVelocity, yVelocity;
+	private int x, y;
 	private boolean isAlive;
 	private int lifePoint;
 	private Main m;
@@ -27,7 +28,7 @@ public final class Player implements Entity {
 	@Override
 	public void run() {
 		while (m.isEnabled()) {
-			move(0, 20, 740, 560);
+			if (isAlive() && !isPaused()) move(0, 20, 740, 560);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
@@ -38,21 +39,19 @@ public final class Player implements Entity {
 
 	@Override
 	public void move(int xMin, int yMin, int xMax, int yMax) {
-		if (isAlive()) {
-			x += xVelocity;
-			y += yVelocity;
-			if (getX() < xMin) {
-				setX(xMin);
-			}
-			if (getY() < yMin) {
-				setY(yMin);
-			}
-			if (getX() > xMax) {
-				setX(xMax);
-			}
-			if (getY() > yMax) {
-				setY(yMax);
-			}
+		setX(getX() + getXVelocity());
+		setY(getY() + getYVelocity());
+		if (getX() < xMin) {
+			setX(xMin);
+		}
+		if (getY() < yMin) {
+			setY(yMin);
+		}
+		if (getX() > xMax) {
+			setX(xMax);
+		}
+		if (getY() > yMax) {
+			setY(yMax);
 		}
 	}
 
@@ -62,7 +61,7 @@ public final class Player implements Entity {
 			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
 		} else {
 			g.drawString("You Died!", 400, 300);
-			g.drawString("Press \"R\" To Try Again!", 350, 325);
+			g.drawString("Press \"R\" to try again!", 350, 325);
 		}
 	}
 
@@ -71,17 +70,9 @@ public final class Player implements Entity {
 		return x;
 	}
 
-	public int getXVelocity() {
-		return xVelocity;
-	}
-
 	@Override
 	public int getY() {
 		return y;
-	}
-
-	public int getYVelocity() {
-		return yVelocity;
 	}
 
 	@Override
@@ -89,19 +80,10 @@ public final class Player implements Entity {
 		this.x = x;
 	}
 
-	public void setXVelocity(int xVelocity) {
-		this.xVelocity = xVelocity;
-	}
-
 	@Override
 	public void setY(int y) {
 		this.y = y;
 	}
-
-	public void setYVelocity(int yVelocity) {
-		this.yVelocity = yVelocity;
-	}
-
 	/**
 	 * Checks if the player is alive or died
 	 * @return true if alive false if died

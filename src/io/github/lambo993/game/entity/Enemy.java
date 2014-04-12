@@ -1,5 +1,6 @@
-package io.github.lambo993.game;
+package io.github.lambo993.game.entity;
 
+import io.github.lambo993.game.Main;
 import java.awt.*;
 import java.util.Random;
 
@@ -8,49 +9,32 @@ import java.util.Random;
  * @author Lamboling Seans
  * @since version 0.7_Alpha
  */
-public class Enemy implements Entity {
+public class Enemy extends Entity {
 
-	private int x, y, xVelocity, yVelocity;
+	private int x, y;
+	private boolean isIgnoring = false;
 
 	public Enemy() {
 		setX(400);
 		setY(50);
 		Random rng = new Random();
-		xVelocity = -1 + rng.nextInt(3);
-		yVelocity = -1 + rng.nextInt(3);
-		if (xVelocity == 0 && yVelocity == 0) {
-			xVelocity = 1;
-			yVelocity = 1;
+		setXVelocity(-1 + rng.nextInt(3));
+		setYVelocity(-1 + rng.nextInt(3));
+		if (getXVelocity() == 0 && getYVelocity() == 0) {
+			setXVelocity(1);
+			setYVelocity(1);
 		}
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			move(0, 5, 790, 590);
+			if (!isPaused()) move(0, 5, 790, 590);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
-		}
-	}
-
-	@Override
-	public void move(int xMin, int yMin, int xMax, int yMax) {
-		x += xVelocity;
-		y += yVelocity;
-		if (getX() < xMin) {
-			xVelocity = 1;
-		}
-		if (getX() > xMax) {
-			xVelocity = -1;
-		}
-		if (getY() < yMin) {
-			yVelocity = 1;
-		}
-		if (getY() > yMax) {
-			yVelocity = -1;
 		}
 	}
 
@@ -64,13 +48,21 @@ public class Enemy implements Entity {
 		return this instanceof SmartEnemy;
 	}
 
+	public boolean isIgnoring() {
+		return isIgnoring;
+	}
+
+	/**
+	 * Set smart enemy to ignore the player or not
+	 * @param ignoring True to ignore the player movements for a while, False for stop ignoring
+	 */
+	public void setIgnoring(boolean ignoring) {
+		isIgnoring = ignoring;
+	}
+
 	@Override
 	public int getX() {
 		return x;
-	}
-
-	public int getXVelocity() {
-		return xVelocity;
 	}
 
 	@Override
@@ -78,26 +70,14 @@ public class Enemy implements Entity {
 		return y;
 	}
 
-	public int getYVelocity() {
-		return yVelocity;
-	}
-
 	@Override
 	public void setX(int x) {
 		this.x = x;
 	}
 
-	public void setXVelocity(int xVelocity) {
-		this.xVelocity = xVelocity;
-	}
-
 	@Override
 	public void setY(int y) {
 		this.y = y;
-	}
-
-	public void setYVelocity(int yVelocity) {
-		this.yVelocity = yVelocity;
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package io.github.lambo993.game;
+package io.github.lambo993.game.entity;
 
 /**
  * Currently unusued hopefully to be used soon

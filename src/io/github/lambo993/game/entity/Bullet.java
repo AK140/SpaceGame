@@ -1,5 +1,6 @@
-package io.github.lambo993.game;
+package io.github.lambo993.game.entity;
 
+import io.github.lambo993.game.Main;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
@@ -8,22 +9,22 @@ import java.awt.Rectangle;
  * @author Lamboling Seans
  * @since version 0.5_Alpha
  */
-public class Bullet implements Entity {
+public class Bullet extends Entity {
 
-	private int x, y, yVelocity;
+	private int x, y;
 
 	public Bullet(int xCoord, int yCoord) {
 		setX(xCoord);
 		setY(yCoord);
-		yVelocity = -4;
+		setYVelocity(-4);
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			move(0, 0, 0, 0);
+			if (!isPaused()) move(0, 0, 0, 0);
 			try {
-				Thread.sleep(5);
+				Main.sleep();
 			} catch (InterruptedException ex) {
 				System.err.println("Error: Thread Interrupted.");
 			}
@@ -32,7 +33,7 @@ public class Bullet implements Entity {
 
 	@Override
 	public void move(int xMin, int yMin, int xMax, int yMax) {
-		y += yVelocity;
+		setY(getY() + getYVelocity());
 	}
 
 	/**

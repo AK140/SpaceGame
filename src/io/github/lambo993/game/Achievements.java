@@ -1,7 +1,9 @@
 package io.github.lambo993.game;
 
 /**
+ * The achievements class
  * @author Lamboling Seans
+ * @since version 1.8_Alpha
  */
 public enum Achievements {
 
