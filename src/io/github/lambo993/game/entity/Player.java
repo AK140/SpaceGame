@@ -28,7 +28,7 @@ public final class Player extends Entity {
 	@Override
 	public void run() {
 		while (m.isEnabled()) {
-			if (isAlive() && !isPaused()) move(0, 20, 740, 560);
+			if (!isPaused()) move(0, 20, 740, 560);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
@@ -39,19 +39,21 @@ public final class Player extends Entity {
 
 	@Override
 	public void move(int xMin, int yMin, int xMax, int yMax) {
-		setX(getX() + getXVelocity());
-		setY(getY() + getYVelocity());
-		if (getX() < xMin) {
-			setX(xMin);
-		}
-		if (getY() < yMin) {
-			setY(yMin);
-		}
-		if (getX() > xMax) {
-			setX(xMax);
-		}
-		if (getY() > yMax) {
-			setY(yMax);
+		if (isAlive()) {
+			setX(getX() + getXVelocity());
+			setY(getY() + getYVelocity());
+			if (getX() < xMin) {
+				setX(xMin);
+			}
+			if (getY() < yMin) {
+				setY(yMin);
+			}
+			if (getX() > xMax) {
+				setX(xMax);
+			}
+			if (getY() > yMax) {
+				setY(yMax);
+			}
 		}
 	}
 

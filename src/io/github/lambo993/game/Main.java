@@ -440,6 +440,10 @@ public final class Main extends JFrame implements Runnable {
 		if (isPaused() != paused) {
 			isPaused = paused;
 			player.setPaused(paused);
+			if (player.isPaused()) {
+				player.setXVelocity(0);
+				player.setYVelocity(0);
+			}
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				e.setPaused(paused);
