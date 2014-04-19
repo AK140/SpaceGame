@@ -1,8 +1,7 @@
 package io.github.lambo993.game.entity;
 
 import io.github.lambo993.game.Main;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.*;
 
 /**
  * The <code>Bullet</code> Entity
@@ -47,7 +46,7 @@ public class Bullet extends Entity {
 	}
 
 	@Override
-	public void draw(Graphics g) {
+	public void draw(Graphics2D g) {
 		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Bullet.gif"), getX(), getY(), new Main());
 	}
 

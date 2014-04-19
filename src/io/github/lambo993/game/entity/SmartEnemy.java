@@ -1,7 +1,7 @@
 package io.github.lambo993.game.entity;
 
 import io.github.lambo993.game.Main;
-import java.awt.Graphics;
+import java.awt.*;
 
 /**
  * Same as enemy but follow the player movements
@@ -52,7 +52,7 @@ public class SmartEnemy extends Enemy {
 	}
 
 	@Override
-	public void draw(Graphics g) {
+	public void draw(Graphics2D g) {
 		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
 	}
 }

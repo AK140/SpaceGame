@@ -39,7 +39,7 @@ public class Enemy extends Entity {
 	}
 
 	@Override
-	public void draw(Graphics g) {
+	public void draw(Graphics2D g) {
 		g.setColor(Color.ORANGE);
 		g.fillOval(getX(), getY(), 11, 11);
 	}

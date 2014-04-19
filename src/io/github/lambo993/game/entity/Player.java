@@ -58,7 +58,7 @@ public final class Player extends Entity {
 	}
 
 	@Override
-	public void draw(Graphics g) {
+	public void draw(Graphics2D g) {
 		if (isAlive()) {
 			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
 		} else {

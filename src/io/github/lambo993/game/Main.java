@@ -1,8 +1,10 @@
 package io.github.lambo993.game;
 
 import io.github.lambo993.game.entity.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -37,6 +39,7 @@ public final class Main extends JFrame implements Runnable {
 	private static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
 	private static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
 	private static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
+	private static final Achievements ACHIEVE4 = Achievements.KILLER;
 
 	/**
 	 * Construct a Windowless <code>Main</code>.
@@ -110,6 +113,9 @@ public final class Main extends JFrame implements Runnable {
 							addScore(1);
 						}
 						killedEnemy++;
+						if (killedEnemy == 100) {
+							ACHIEVE4.unlock();
+						}
 					}
 				}
 			}
@@ -141,13 +147,13 @@ public final class Main extends JFrame implements Runnable {
 
 	@Override
 	public void paint(Graphics g) {
-		Image dbImg = createImage(getWidth(), getHeight());
-		Graphics dbg = dbImg.getGraphics();
+		BufferedImage dbImg = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D dbg = dbImg.createGraphics();
 		draw(dbg);
 		g.drawImage(dbImg, 0, 0, this);
 	}
 
-	public void draw(final Graphics g) {
+	public void draw(final Graphics2D g) {
 		//TODO: Make better space-like background and moving it
 		g.drawImage(loadImage("/io/github/lambo993/game/images/BackGround.png"), 0, 0, this);
 		player.draw(g);
@@ -364,9 +370,9 @@ public final class Main extends JFrame implements Runnable {
 			} else {
 				try {
 					onDisable();
-				} catch (Exception e) {
-					System.err.println("Error on disabling forcing close");
-					e.printStackTrace();
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Error on disabling forcing close", "Disabling Error", JOptionPane.ERROR_MESSAGE);
+					//crashReport(ex);
 					System.exit(0);
 				}
 			}
@@ -552,7 +558,9 @@ public final class Main extends JFrame implements Runnable {
 				out.println(ACHIEVE2.getName());
 			} if (ACHIEVE3.isUnlocked()) {
 				out.println(ACHIEVE3.getName());
-			} else if (!ACHIEVE1.isUnlocked() && !ACHIEVE2.isUnlocked() && !ACHIEVE3.isUnlocked()) {
+			} if (ACHIEVE4.isUnlocked()) {
+				out.println(ACHIEVE4.getName());
+			} else if (!ACHIEVE1.isUnlocked() && !ACHIEVE2.isUnlocked() && !ACHIEVE3.isUnlocked() && !ACHIEVE4.isUnlocked()) {
 				out.println("None");
 			}
 			out.close();
@@ -566,9 +574,8 @@ public final class Main extends JFrame implements Runnable {
 	/**
 	 * Writes a crash report to a file if the game got an exception
 	 * @param t The error that's be checked
-	 * @deprecated Still finding a way where to check the error
+	 * @deprecated Adding time and date to report and more error checking
 	 */
-	@Deprecated
 	public static void crashReport(Throwable t) {
 		try {
 			File dir = new File("Space Catastrophe");
@@ -577,8 +584,17 @@ public final class Main extends JFrame implements Runnable {
 			}
 			File file = new File(dir, "crash-report.txt");
 			PrintStream err = new PrintStream(file);
-			err.println(t.getMessage());
+			err.println("Stack Trace:");
 			t.printStackTrace(err);
+			err.println("System details:");
+			Runtime r = Runtime.getRuntime();
+			long max = r.maxMemory();
+			long total = r.totalMemory();
+			long f = r.freeMemory();
+			long a = 1024;
+			err.println("Operating System: " + System.getProperty("os.name") + "(" + System.getProperty("os.arch") + ") version " + System.getProperty("os.version"));
+			err.println("Java Version: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor"));
+			err.println("Memory: " + f + " bytes (" + f / a / a + " MB) / " + total + " bytes (" + total / a / a + " MB) up to " + max + " bytes (" + max /a /a + " MB)");
 		} catch (IOException e) {
 			System.exit(0);
 		}

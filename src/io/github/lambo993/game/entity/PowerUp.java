@@ -33,7 +33,7 @@ public class PowerUp extends Entity {
 	}
 
 	@Override
-	public void draw(Graphics g) {
+	public void draw(Graphics2D g) {
 		g.setColor(Color.GREEN);
 		g.fillOval(getX(), getY(), 7, 7);
 	}
