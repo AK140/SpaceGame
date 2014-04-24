@@ -1,12 +1,12 @@
 package io.github.lambo993.game;
 
 import io.github.lambo993.game.entity.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -88,7 +88,7 @@ public final class Main extends JFrame implements Runnable {
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				if (collidesWith(player, e)) {
-					playSound("/io/github/lambo993/game/sound/explosion.wav");
+					playSound("explosion.wav");
 					enemies.remove(i);
 					player.removeLife(1);
 					if (e.isSmart()) {
@@ -104,7 +104,7 @@ public final class Main extends JFrame implements Runnable {
 				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
 					Enemy e = enemies.get(i);
 					if (collidesWith(bullets.get(j), e)) {
-						playSound("/io/github/lambo993/game/sound/hit.wav");
+						playSound("hit.wav");
 						enemies.remove(i);
 						bullets.remove(j);
 						if (e.isSmart()) {
@@ -122,7 +122,7 @@ public final class Main extends JFrame implements Runnable {
 			for (int i = 0; i < powers.size(); i++) {
 				if (collidesWith(player, powers.get(i))) {
 					powers.remove(i);
-					playSound("/io/github/lambo993/game/sound/powerup.wav");
+					playSound("powerup.wav");
 					if (player.getLife() == 3) {
 						addScore(1);
 					}
@@ -250,7 +250,12 @@ public final class Main extends JFrame implements Runnable {
 				clip.close();
 			} else {
 				clip.open(audioIn);
-				clip.loop(loop);
+				if (loop != 0) {
+					clip.loop(loop);
+				} else {
+					clip.setFramePosition(0);
+					clip.start();
+				}
 			}
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
@@ -264,7 +269,7 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.7_Alpha
 	 */
 	public static void playSound(final String path) {
-		playSound(path, 0);
+		playSound("/io/github/lambo993/game/sound/" + path, 0);
 	}
 
 	public static void sleep() throws InterruptedException {
@@ -313,8 +318,8 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	private void shootBullet(int spawnLimit) {
-		if (bullets.size() < spawnLimit && player.isAlive()) {
-			playSound("/io/github/lambo993/game/sound/bullet.wav");
+		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
+			playSound("bullet.wav");
 			Bullet b = new Bullet(player.getX() + 30, player.getY() - 12);
 			bullets.add(b);
 			Thread t = new Thread(b);
@@ -386,6 +391,7 @@ public final class Main extends JFrame implements Runnable {
 
 	private void onEnable() {
 		System.out.println("Starting game...");
+		System.setProperty("spacecatastrophe.name", toString());
 		System.setProperty("spacecatastrophe.version", "1.8.2_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
 		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
@@ -453,9 +459,6 @@ public final class Main extends JFrame implements Runnable {
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				e.setPaused(paused);
-				if (e.isSmart()) {
-					new Thread(e).start();
-				}
 			}
 			for (int i = 0; i < bullets.size(); i++) {
 				Bullet b = bullets.get(i);
@@ -582,20 +585,23 @@ public final class Main extends JFrame implements Runnable {
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
-			File file = new File(dir, "crash-report.txt");
+			File file = new File(dir, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
 			PrintStream err = new PrintStream(file);
+			err.println("Please go to https://github.com/Lambo993/SpaceGame/issues and report this");
 			err.println("Stack Trace:");
 			t.printStackTrace(err);
 			err.println("System details:");
 			Runtime r = Runtime.getRuntime();
-			long max = r.maxMemory();
-			long total = r.totalMemory();
-			long f = r.freeMemory();
-			long a = 1024;
+			long m = 1024;
+			long mm = r.maxMemory();
+			long tm = r.totalMemory();
+			long fm = r.freeMemory();
 			err.println("Operating System: " + System.getProperty("os.name") + "(" + System.getProperty("os.arch") + ") version " + System.getProperty("os.version"));
 			err.println("Java Version: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor"));
-			err.println("Memory: " + f + " bytes (" + f / a / a + " MB) / " + total + " bytes (" + total / a / a + " MB) up to " + max + " bytes (" + max /a /a + " MB)");
+			err.println("Java VM Version: " + System.getProperty("java.vm.name") + " (" + System.getProperty("java.vm.info") + "), " + System.getProperty("java.vm.vendor"));
+			err.println("Memory: " + fm + " bytes (" + fm / m / m + " MB) / " + tm + " bytes (" + tm / m / m + " MB) up to " + mm + " bytes (" + mm /m /m + " MB)");
 		} catch (IOException e) {
+			System.err.println("Couldn't save crash report");
 			System.exit(0);
 		}
 	}
@@ -609,11 +615,21 @@ public final class Main extends JFrame implements Runnable {
 		if (args.length == 1 && args[0].equalsIgnoreCase("-server")) {
 			JOptionPane.showMessageDialog(null, "The server feature supposed to be hidden!");
 			try {
-				InetAddress address = InetAddress.getByName(JOptionPane.showInputDialog("Enter ip address"));
-				int port = Integer.parseInt(JOptionPane.showInputDialog("Enter port"));
-				Socket server = new Socket(address, port);
+				String fullIp = JOptionPane.showInputDialog("Enter ip address and port");
+				String[] partialIp = fullIp.split(":");
+				int port;
+				if (partialIp.length == 1 || partialIp.length < 3) {
+					port = 25575;
+				} else {
+					try {
+						port = Integer.parseInt(partialIp[1]);
+					} catch (NumberFormatException ex) {
+						port = 25575;
+					}
+				}
+				Socket server = new Socket(partialIp[0], port);
 				if (server.isConnected()) {
-					System.out.println("Connected to " + server.getInetAddress().getHostName() + ":" + port);
+					System.out.println("Connected to " + fullIp);
 				}
 				server.close();
 			} catch (UnknownHostException ex) {

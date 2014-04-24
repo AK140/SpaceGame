@@ -20,7 +20,7 @@ public class SmartEnemy extends Enemy {
 
 	@Override
 	public void run() {
-		while (!isPaused()) {
+		while (true) {
 			int x = player.getX() + 30;
 			int y = player.getY() + 10;
 			int x1 = x + 50;

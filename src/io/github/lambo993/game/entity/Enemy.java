@@ -29,7 +29,7 @@ public class Enemy extends Entity {
 	@Override
 	public void run() {
 		while (true) {
-			if (!isPaused()) move(0, 5, 790, 590);
+			move(0, 5, 790, 590);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {

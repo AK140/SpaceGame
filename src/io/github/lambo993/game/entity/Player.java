@@ -62,6 +62,7 @@ public final class Player extends Entity {
 		if (isAlive()) {
 			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
 		} else {
+			g.setColor(Color.BLACK);
 			g.drawString("You Died!", 400, 300);
 			g.drawString("Press \"R\" to try again!", 350, 325);
 		}
@@ -105,7 +106,7 @@ public final class Player extends Entity {
 			isAlive = alive;
 			if (!alive) {
 				setLife(0);
-				Main.playSound("/io/github/lambo993/game/sound/lost.wav");
+				Main.playSound("lost.wav");
 			} else {
 				setLife(3);
 			}
