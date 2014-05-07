@@ -15,7 +15,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.8.2_Alpha
+ * @version 1.8.3_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -31,15 +31,16 @@ public final class Main extends JFrame implements Runnable {
 	private int killedEnemy = 0;
 	private int powersCollected = 0;
 	private int bulletsShooted = 0;
-	private boolean screenShowed;
+	private boolean debugEnabled;
 	private static boolean isPaused = false;
 	private static boolean isSoundMuted = false;
 	private static final int PRESS_PERIOD = 0x177;
-	private long lastPressMs = 0;
-	private static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
-	private static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
-	private static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
-	private static final Achievements ACHIEVE4 = Achievements.KILLER;
+	private static long lastPressMs = 0;
+	public static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
+	public static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
+	public static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
+	public static final Achievements ACHIEVE4 = Achievements.KILLER;
+	public static final Logger LOGGER = Logger.getLogger("Main");
 
 	/**
 	 * Construct a Windowless <code>Main</code>.
@@ -93,10 +94,10 @@ public final class Main extends JFrame implements Runnable {
 					player.removeLife(1);
 					if (e.isSmart()) {
 						if (e.getY() > player.getY()) {
-							ACHIEVE1.unlock();
+							unlock(ACHIEVE1);
 						}
 					} else {
-						removeScore(1);
+						reduceScore(1);
 					}
 				}
 			}
@@ -114,7 +115,7 @@ public final class Main extends JFrame implements Runnable {
 						}
 						killedEnemy++;
 						if (killedEnemy == 100) {
-							ACHIEVE4.unlock();
+							unlock(ACHIEVE4);
 						}
 					}
 				}
@@ -133,14 +134,14 @@ public final class Main extends JFrame implements Runnable {
 			for (int i = 0; i < powers.size(); i++) {
 				for (int j = 0; j < bullets.size(); j++) {
 					if (collidesWith(bullets.get(j), powers.get(i))) {
-						ACHIEVE2.unlock();
+						unlock(ACHIEVE2);
 					}
 				}
 			}
 			try {
 				sleep();
 			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
+				LOGGER.warning("Error: Thread Interrupted.");
 			}
 		}
 	}
@@ -155,29 +156,32 @@ public final class Main extends JFrame implements Runnable {
 
 	public void draw(final Graphics2D g) {
 		//TODO: Make better space-like background and moving it
-		g.drawImage(loadImage("/io/github/lambo993/game/images/BackGround.png"), 0, 0, this);
+		g.drawImage(loadImage("BackGround.png"), 0, 0, this);
 		player.draw(g);
+		if (debugEnabled && player.isAlive()) g.draw(player.getHitbox());
 		for (int i = 0; i < bullets.size(); i++) {
 			Bullet b = bullets.get(i);
+			if (debugEnabled) g.draw(b.getHitbox());
 			b.draw(g);
 		}
 		for (int i = 0; i < enemies.size(); i++) {
 			Enemy e = enemies.get(i);
+			if (debugEnabled) g.draw(e.getHitbox());
 			e.draw(g);
 		}
 		for (int i = 0; i < powers.size(); i++) {
 			PowerUp p = powers.get(i);
+			if (debugEnabled) g.draw(p.getHitbox());
 			p.draw(g);
 		}
 
 		g.setColor(Color.BLACK);
-		Font font = new Font(Font.MONOSPACED, 0, 12);
-		g.setFont(font);
+		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		g.drawString(Integer.toString(getScore()), 85, 45);
 		g.drawString(Integer.toString(player.getLife()), 85, 60);
 		g.drawString("Score:", 40, 45);
 		g.drawString("HP:", 40, 60);
-		if (screenShowed) {
+		if (debugEnabled) {
 			g.drawString("x:", 735, 45);
 			g.drawString("y:", 735, 60);
 			g.drawString("b:", 735, 75);
@@ -227,7 +231,7 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.4_Alpha
 	 */
 	public static Image loadImage(String path) {
-		return loadImage(path, false);
+		return loadImage("/io/github/lambo993/game/images/" + path, false);
 	}
 
 	public static void setMuted(boolean muted) {
@@ -244,21 +248,18 @@ public final class Main extends JFrame implements Runnable {
 		try {
 			AudioInputStream audioIn = AudioSystem.getAudioInputStream(Main.class.getResource(path));
 			Clip clip = AudioSystem.getClip();
-			if (isSoundMuted) {
-				clip.stop();
-				clip.flush();
-				clip.close();
+			clip.open(audioIn);
+			BooleanControl bc = (BooleanControl)clip.getControl(BooleanControl.Type.MUTE);
+			bc.setValue(isSoundMuted);
+			if (loop != 0) {
+				clip.loop(loop);
 			} else {
-				clip.open(audioIn);
-				if (loop != 0) {
-					clip.loop(loop);
-				} else {
-					clip.setFramePosition(0);
-					clip.start();
-				}
+				clip.setFramePosition(0);
+				clip.start();
 			}
-		} catch (Exception e) {
-			System.err.println("Error: " + e.getMessage());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.warning("Error: " + ex.getMessage());
 			setMuted(true);
 		}
 	}
@@ -270,6 +271,20 @@ public final class Main extends JFrame implements Runnable {
 	 */
 	public static void playSound(final String path) {
 		playSound("/io/github/lambo993/game/sound/" + path, 0);
+	}
+
+	/**
+	 * Delays the bullet shooting
+	 * @param delay How much the delay in Milliseconds
+	 * @return True if it's longer than the delay time false otherwise
+	 * @since version 1.7.5_Alpha
+	 */
+	public static boolean delayButton(long delay) {
+		if (System.currentTimeMillis() - lastPressMs < delay) {
+			return false;
+		}
+		lastPressMs = System.currentTimeMillis();
+		return true;
 	}
 
 	public static void sleep() throws InterruptedException {
@@ -301,6 +316,14 @@ public final class Main extends JFrame implements Runnable {
 		return hitBox1.intersects(hitBox2) || hitBox2.intersects(hitBox1);
 	}
 
+	public static void unlock(Achievements a) {
+		if (!a.isUnlocked()) {
+			LOGGER.info("Achievements unlocked! " + a.getName());
+			a.setUnlocked(true);
+			playSound("achievement.wav");
+		}
+	}
+
 	public Player getPlayer() {
 		return player;
 	}
@@ -329,8 +352,7 @@ public final class Main extends JFrame implements Runnable {
 				Enemy e = enemies.get(i);
 				if (e.isSmart() && b.getX() == e.getX() && b.getY() > e.getY() && !e.isIgnoring()) {
 					e.setIgnoring(true);
-					Random rng = new Random();
-					int chance = rng.nextInt();
+					int chance = new Random().nextInt();
 					if ((chance % 2) == 0) {
 						e.setXVelocity(1);
 					} else {
@@ -343,8 +365,7 @@ public final class Main extends JFrame implements Runnable {
 
 	protected void spawnEnemy(int spawnLimit) {
 		if (enemies.size() < spawnLimit && player.isAlive()) {
-			Random r = new Random();
-			int chance = r.nextInt();
+			int chance = new Random().nextInt();
 			if ((chance % 2) == 0) {
 				SmartEnemy se = new SmartEnemy(player);
 				enemies.add(se);
@@ -390,26 +411,27 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	private void onEnable() {
-		System.out.println("Starting game...");
+		LOGGER.info("Starting game...");
 		System.setProperty("spacecatastrophe.name", toString());
-		System.setProperty("spacecatastrophe.version", "1.8.2_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.3_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
 		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
 				JOptionPane.DEFAULT_OPTION);
 		if (i == -1) {
+			LOGGER.info("Closed game");
 			System.exit(1);
 			return;
 		}
-		setIconImage(loadImage("/io/github/lambo993/game/images/Ship.png"));
+		setIconImage(loadImage("Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
-		System.out.println("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
+		LOGGER.info("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
 	private void onDisable() throws Exception {
 		setMuted(true);
-		screenShowed = false;
+		debugEnabled = false;
+		LOGGER.info("Closing game...");
 		saveStats();
-		System.out.println("Closing game...");
 		setScore(0);
 		player.setX(0);
 		player.setY(0);
@@ -432,7 +454,7 @@ public final class Main extends JFrame implements Runnable {
 			return;
 		}
 		lastPressMs = System.currentTimeMillis();
-		System.out.println("Reseting...");
+		LOGGER.info("Reseting...");
 		powers.removeAll(powers);
 		enemies.removeAll(enemies);
 		bullets.removeAll(bullets);
@@ -511,15 +533,15 @@ public final class Main extends JFrame implements Runnable {
 
 	/**
 	 * Removes the score if the score is more than 0
-	 * @param removeScore Removes the score
+	 * @param reduceScore Removes the score
 	 * @throws IllegalArgumentException When using negatives to <code>removeScore</code>
 	 * @since version 1.5_Alpha
 	 */
-	public void removeScore(int removeScore) {
+	public void reduceScore(int reduceScore) {
 		if (score > 0) {
-			score -= removeScore;
+			score -= reduceScore;
 		}
-		if (removeScore < 0) {
+		if (reduceScore < 0) {
 			throw new IllegalArgumentException("You can't use negative");
 		}
 	}
@@ -530,12 +552,12 @@ public final class Main extends JFrame implements Runnable {
 	 * @author Wilee999
 	 * @since version 1.7.8_Alpha
 	 */
-	public void saveStats() {
+	public boolean saveStats() {
 		try {
 			int i = JOptionPane.showConfirmDialog(null, "Save the stats?", toString(),
 					JOptionPane.YES_NO_OPTION);
 			if (i == 1 || i == -1) {
-				return;
+				return false;
 			}
 			File dir = new File("Space Catastrophe");
 			if (!dir.exists()) {
@@ -566,11 +588,18 @@ public final class Main extends JFrame implements Runnable {
 			} else if (!ACHIEVE1.isUnlocked() && !ACHIEVE2.isUnlocked() && !ACHIEVE3.isUnlocked() && !ACHIEVE4.isUnlocked()) {
 				out.println("None");
 			}
+			LOGGER.info("Stats saved!");
+			out.println("Log history:");
+			/*
+			for (String s: LOGGER.getHistory()) {
+				out.println(s);
+			} */
 			out.close();
-			System.out.println("Stats saved!");
+			return true;
 		} catch (IOException ex) {
-			System.err.println("Error: " + ex.getMessage());
+			LOGGER.warning("Error: " + ex.getMessage());
 			ex.printStackTrace();
+			return false;
 		}
 	}
 
@@ -585,7 +614,7 @@ public final class Main extends JFrame implements Runnable {
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
-			File file = new File(dir, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
+			File file = new File(dir, "crash-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + "-client.txt");
 			PrintStream err = new PrintStream(file);
 			err.println("Please go to https://github.com/Lambo993/SpaceGame/issues and report this");
 			err.println("Stack Trace:");
@@ -596,12 +625,14 @@ public final class Main extends JFrame implements Runnable {
 			long mm = r.maxMemory();
 			long tm = r.totalMemory();
 			long fm = r.freeMemory();
-			err.println("Operating System: " + System.getProperty("os.name") + "(" + System.getProperty("os.arch") + ") version " + System.getProperty("os.version"));
+			err.println("Operating System: " + System.getProperty("os.name") + "(" + System.getProperty("os.arch") + ") version "
+					+ System.getProperty("os.version"));
 			err.println("Java Version: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor"));
-			err.println("Java VM Version: " + System.getProperty("java.vm.name") + " (" + System.getProperty("java.vm.info") + "), " + System.getProperty("java.vm.vendor"));
+			err.println("Java VM Version: " + System.getProperty("java.vm.name") +
+					" (" + System.getProperty("java.vm.info") + "), " + System.getProperty("java.vm.vendor"));
 			err.println("Memory: " + fm + " bytes (" + fm / m / m + " MB) / " + tm + " bytes (" + tm / m / m + " MB) up to " + mm + " bytes (" + mm /m /m + " MB)");
-		} catch (IOException e) {
-			System.err.println("Couldn't save crash report");
+		} catch (IOException ex) {
+			LOGGER.severe("Couldn't save crash report");
 			System.exit(0);
 		}
 	}
@@ -629,7 +660,7 @@ public final class Main extends JFrame implements Runnable {
 				}
 				Socket server = new Socket(partialIp[0], port);
 				if (server.isConnected()) {
-					System.out.println("Connected to " + fullIp);
+					LOGGER.info("Connected to " + fullIp);
 				}
 				server.close();
 			} catch (UnknownHostException ex) {
@@ -652,7 +683,7 @@ public final class Main extends JFrame implements Runnable {
 			try {
 				Thread.sleep(3 * 1000); //FIXME: Pausing or restart doesn't restart or pause the timings
 			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
+				LOGGER.warning("Error: Thread Interrupted.");
 			}
 		} while (m.isEnabled());
 	}
@@ -697,19 +728,19 @@ public final class Main extends JFrame implements Runnable {
 				fireBullet();
 				break;
 			case KeyEvent.VK_F3:
-				if (!screenShowed) {
-					screenShowed = true;
+				if (!debugEnabled) {
+					debugEnabled = true;
 				} else {
-					screenShowed = false;
+					debugEnabled = false;
 				}
 				break;
 			case KeyEvent.VK_F8:
 				if (isSoundMuted) {
 					setMuted(false);
-					System.out.println("Unmuted");
+					LOGGER.info("Unmuted");
 				} else {
 					setMuted(true);
-					System.out.println("Mutted");
+					LOGGER.info("Mutted");
 				}
 				break;
 			case KeyEvent.VK_ESCAPE:
@@ -761,7 +792,7 @@ public final class Main extends JFrame implements Runnable {
 				fireBullet();
 				break;
 			case MouseEvent.BUTTON3:
-				ACHIEVE3.unlock();
+				unlock(ACHIEVE3);
 				break;
 			default:
 				break;

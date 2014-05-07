@@ -8,7 +8,7 @@ import java.awt.BorderLayout;
  * @author Lamboling Seans
  * @since version 1.3_Alpha
  * @serial -8906798179739115470L
- * @deprecated Repaint still bugged
+ * @deprecated Game loop bugged
  */
 @Deprecated
 public class MainApplet extends JApplet {

@@ -47,7 +47,7 @@ public class Bullet extends Entity {
 
 	@Override
 	public void draw(Graphics2D g) {
-		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Bullet.gif"), getX(), getY(), new Main());
+		g.drawImage(Main.loadImage("Bullet.gif"), getX(), getY(), new Main());
 	}
 
 	@Override

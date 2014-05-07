@@ -53,6 +53,6 @@ public class SmartEnemy extends Enemy {
 
 	@Override
 	public void draw(Graphics2D g) {
-		g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Enemy.png"), getX(), getY(), new Main());
+		g.drawImage(Main.loadImage("Enemy.png"), getX(), getY(), new Main());
 	}
 }

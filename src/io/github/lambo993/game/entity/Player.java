@@ -1,6 +1,6 @@
 package io.github.lambo993.game.entity;
 
-import io.github.lambo993.game.Main;
+import io.github.lambo993.game.*;
 import java.awt.*;
 
 /**
@@ -13,9 +13,9 @@ public final class Player extends Entity {
 	private int x, y;
 	private boolean isAlive;
 	private int lifePoint;
-	private Main m;
+	private Container m;
 
-	public Player(Main m) {
+	public Player(Container m) {
 		this.m = m;
 		setX(400);
 		setY(300);
@@ -60,7 +60,7 @@ public final class Player extends Entity {
 	@Override
 	public void draw(Graphics2D g) {
 		if (isAlive()) {
-			g.drawImage(Main.loadImage("/io/github/lambo993/game/images/Ship.png"), getX(), getY(), m);
+			g.drawImage(Main.loadImage("Ship.png"), getX(), getY(), m);
 		} else {
 			g.setColor(Color.BLACK);
 			g.drawString("You Died!", 400, 300);

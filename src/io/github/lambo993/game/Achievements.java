@@ -22,13 +22,6 @@ public enum Achievements {
 		this.name = name;
 	}
 
-	public void unlock() {
-		if (!isUnlocked()) {
-			System.out.println("Achievements unlocked! " + getName());
-			setUnlocked(true);
-		}
-	}
-
 	public int getId() {
 		return id;
 	}
