@@ -1,6 +1,8 @@
 package io.github.lambo993.game;
 
+import io.github.lambo993.engine.*;
 import io.github.lambo993.game.entity.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -8,6 +10,7 @@ import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 
@@ -15,57 +18,44 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.8.3_Alpha
+ * @version 1.8.4_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
-public final class Main extends JFrame implements Runnable {
+public final class Main extends Engine {
 
 	private static final long serialVersionUID = 5832158247289767468L;
 	private final Player player;
 	private final ArrayList<Bullet> bullets;
 	private final ArrayList<Enemy> enemies;
 	private final ArrayList<PowerUp> powers;
-	private boolean isEnabled = false;
-	private int score = 0;
 	private int killedEnemy = 0;
 	private int powersCollected = 0;
 	private int bulletsShooted = 0;
 	private boolean debugEnabled;
 	private static boolean isPaused = false;
-	private static boolean isSoundMuted = false;
-	private static final int PRESS_PERIOD = 0x177;
-	private static long lastPressMs = 0;
 	public static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
 	public static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
 	public static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
 	public static final Achievements ACHIEVE4 = Achievements.KILLER;
-	public static final Logger LOGGER = Logger.getLogger("Main");
 
 	/**
 	 * Construct a Windowless <code>Main</code>.
 	 * To instance this class
 	 */
 	public Main() {
-		this(null, false);
+		this(false);
 	}
 
 	/**
 	 * Construct The Game
-	 * @param title Title for the Window
 	 * @param createWindows true if create Window false if not
 	 * @throws HeadlessException
 	 */
-	protected Main(final String title, final boolean createWindows) throws HeadlessException {
+	protected Main(final boolean createWindows) throws HeadlessException {
+		super("Space Catastrophe", 800, 600, createWindows);
 		if (createWindows) {
-			setEnabled(true);
-			setSize(800, 600);
-			setResizable(false);
-			setLocationRelativeTo(null);
-			setDefaultCloseOperation(EXIT_ON_CLOSE);
 			setBackground(Color.BLACK);
-			setVisible(true);
-			setTitle(title);
 			Cursor cursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 			setCursor(cursor);
 			addKeyListener(new KeyListenerEvent());
@@ -141,7 +131,7 @@ public final class Main extends JFrame implements Runnable {
 			try {
 				sleep();
 			} catch (InterruptedException ex) {
-				LOGGER.warning("Error: Thread Interrupted.");
+				LOGGER.severe("Error: Thread Interrupted.");
 			}
 		}
 	}
@@ -154,6 +144,7 @@ public final class Main extends JFrame implements Runnable {
 		g.drawImage(dbImg, 0, 0, this);
 	}
 
+	@Override
 	public void draw(final Graphics2D g) {
 		//TODO: Make better space-like background and moving it
 		g.drawImage(loadImage("BackGround.png"), 0, 0, this);
@@ -206,62 +197,11 @@ public final class Main extends JFrame implements Runnable {
 	/**
 	 * Loads an Image
 	 * @param path Path to the Image File
-	 * @param useDirectory true for load image in jar false for comp directory
-	 * @return the loaded <code>Image</code> object
-	 * @since version 1.7.8_Alpha
-	 */
-	public static Image loadImage(String path, boolean useDirectory) {
-		if (path == null) {
-			throw new IllegalArgumentException("path cannot be null!");
-		}
-		ImageIcon img;
-		if (!useDirectory) {
-			img = new ImageIcon(Main.class.getResource(path));
-			return img.getImage();
-		} else {
-			img = new ImageIcon(path);
-			return img.getImage();
-		}
-	}
-
-	/**
-	 * Loads an Image
-	 * @param path Path to the Image File
 	 * @return the loaded <code>Image</code> object
 	 * @since version 1.4_Alpha
 	 */
 	public static Image loadImage(String path) {
 		return loadImage("/io/github/lambo993/game/images/" + path, false);
-	}
-
-	public static void setMuted(boolean muted) {
-		isSoundMuted = muted;
-	}
-
-	/**
-	 * Plays The sound
-	 * @param path Path to the Sound File
-	 * @param loop How Many Times The Sound Loop
-	 * @since version 1.7.4_Alpha
-	 */
-	public static void playSound(final String path, final int loop) {
-		try {
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(Main.class.getResource(path));
-			Clip clip = AudioSystem.getClip();
-			clip.open(audioIn);
-			BooleanControl bc = (BooleanControl)clip.getControl(BooleanControl.Type.MUTE);
-			bc.setValue(isSoundMuted);
-			if (loop != 0) {
-				clip.loop(loop);
-			} else {
-				clip.setFramePosition(0);
-				clip.start();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			LOGGER.warning("Error: " + ex.getMessage());
-			setMuted(true);
-		}
 	}
 
 	/**
@@ -271,20 +211,6 @@ public final class Main extends JFrame implements Runnable {
 	 */
 	public static void playSound(final String path) {
 		playSound("/io/github/lambo993/game/sound/" + path, 0);
-	}
-
-	/**
-	 * Delays the bullet shooting
-	 * @param delay How much the delay in Milliseconds
-	 * @return True if it's longer than the delay time false otherwise
-	 * @since version 1.7.5_Alpha
-	 */
-	public static boolean delayButton(long delay) {
-		if (System.currentTimeMillis() - lastPressMs < delay) {
-			return false;
-		}
-		lastPressMs = System.currentTimeMillis();
-		return true;
 	}
 
 	public static void sleep() throws InterruptedException {
@@ -333,10 +259,9 @@ public final class Main extends JFrame implements Runnable {
 	 * @since version 1.7.5_Alpha
 	 */
 	public void fireBullet() {
-		if (System.currentTimeMillis() - lastPressMs < PRESS_PERIOD) {
+		if (!delayButton(375)) { //FIXME: Pausing doesn't pause the bullet shooting time limit
 			return;
 		}
-		lastPressMs = System.currentTimeMillis(); //FIXME: Pausing doesn't pause the bullet shooting time limit
 		shootBullet(10);
 	}
 
@@ -387,33 +312,10 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	@Override
-	public void setEnabled(final boolean enabled) {
-		if (isEnabled() != enabled) {
-			isEnabled = enabled;
-
-			if (isEnabled) {
-				onEnable();
-			} else {
-				try {
-					onDisable();
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "Error on disabling forcing close", "Disabling Error", JOptionPane.ERROR_MESSAGE);
-					//crashReport(ex);
-					System.exit(0);
-				}
-			}
-		}
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return isEnabled;
-	}
-
-	private void onEnable() {
+	protected void onEnable() {
 		LOGGER.info("Starting game...");
 		System.setProperty("spacecatastrophe.name", toString());
-		System.setProperty("spacecatastrophe.version", "1.8.3_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.4_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
 		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
 				JOptionPane.DEFAULT_OPTION);
@@ -427,7 +329,8 @@ public final class Main extends JFrame implements Runnable {
 		LOGGER.info("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
-	private void onDisable() throws Exception {
+	@Override
+	protected void onDisable() throws Exception {
 		setMuted(true);
 		debugEnabled = false;
 		LOGGER.info("Closing game...");
@@ -450,10 +353,9 @@ public final class Main extends JFrame implements Runnable {
 	}
 
 	private void onReset() {
-		if (System.currentTimeMillis() - lastPressMs < PRESS_PERIOD) {
+		if (!delayButton(500)) {
 			return;
 		}
-		lastPressMs = System.currentTimeMillis();
 		LOGGER.info("Reseting...");
 		powers.removeAll(powers);
 		enemies.removeAll(enemies);
@@ -495,55 +397,6 @@ public final class Main extends JFrame implements Runnable {
 
 	public static boolean isPaused() {
 		return isPaused;
-	}
-
-	/**
-	 * Gets the score
-	 * @return The Value of the Score
-	 * @since version 1.4_Alpha
-	 */
-	public int getScore() {
-		if (score < 0) {
-			score = 0;
-		}
-		return score;
-	}
-
-	/**
-	 * Sets the score
-	 * @param score sets the score
-	 * @since version 1.4_Alpha
-	 */
-	public void setScore(int newScore) {
-		score = newScore;
-	}
-
-	/**
-	 * For adding scores
-	 * @param addScore Adds the score
-	 * @throws IllegalArgumentException When using negatives to <code>addScore</code>
-	 * @since version 1.5_Alpha
-	 */
-	public void addScore(int addScore) {
-		score += addScore;
-		if (addScore < 0) {
-			throw new IllegalArgumentException("You can't use negative");
-		}
-	}
-
-	/**
-	 * Removes the score if the score is more than 0
-	 * @param reduceScore Removes the score
-	 * @throws IllegalArgumentException When using negatives to <code>removeScore</code>
-	 * @since version 1.5_Alpha
-	 */
-	public void reduceScore(int reduceScore) {
-		if (score > 0) {
-			score -= reduceScore;
-		}
-		if (reduceScore < 0) {
-			throw new IllegalArgumentException("You can't use negative");
-		}
 	}
 
 	/**
@@ -590,10 +443,9 @@ public final class Main extends JFrame implements Runnable {
 			}
 			LOGGER.info("Stats saved!");
 			out.println("Log history:");
-			/*
 			for (String s: LOGGER.getHistory()) {
-				out.println(s);
-			} */
+				out.print(s);
+			}
 			out.close();
 			return true;
 		} catch (IOException ex) {
@@ -673,7 +525,7 @@ public final class Main extends JFrame implements Runnable {
 				System.exit(0);
 			}
 		}
-		Main m = new Main("Space Catastrophe", true);
+		Main m = new Main(true);
 		new Thread(m).start();
 		do {
 			if (!isPaused()) {
@@ -735,7 +587,7 @@ public final class Main extends JFrame implements Runnable {
 				}
 				break;
 			case KeyEvent.VK_F8:
-				if (isSoundMuted) {
+				if (isMuted()) {
 					setMuted(false);
 					LOGGER.info("Unmuted");
 				} else {
@@ -806,6 +658,12 @@ public final class Main extends JFrame implements Runnable {
 		public void windowClosing(WindowEvent event) {
 			setPaused(true);
 			setEnabled(false);
+		}
+
+		@Override
+		public void windowLostFocus(WindowEvent event) {
+			player.setXVelocity(0);
+			player.setYVelocity(0);
 		}
 	}
 }

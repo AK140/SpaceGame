@@ -13,9 +13,9 @@ public final class Player extends Entity {
 	private int x, y;
 	private boolean isAlive;
 	private int lifePoint;
-	private Container m;
+	private Main m;
 
-	public Player(Container m) {
+	public Player(Main m) {
 		this.m = m;
 		setX(400);
 		setY(300);
@@ -32,7 +32,7 @@ public final class Player extends Entity {
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
+				Main.LOGGER.severe("Error: Thread Interrupted.");
 			}
 		}
 	}
@@ -121,10 +121,10 @@ public final class Player extends Entity {
 		if (lifePoint < 1) {
 			setAlive(false);
 		} else if (lifePoint > 3) {
-			System.err.println("LifePoint can't be more than 3!");
+			Main.LOGGER.warning("LifePoint can't be more than 3!");
 			setLife(3);
 		} else if (lifePoint < 0) {
-			System.err.println("LifePoint can't be less than 0!");
+			Main.LOGGER.warning("LifePoint can't be less than 0!");
 			setLife(0);
 		}
 		return lifePoint;

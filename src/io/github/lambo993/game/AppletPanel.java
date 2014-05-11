@@ -10,7 +10,7 @@ import javax.swing.*;
 
 /**
  * A panel for the applet
- * @deprecated A bug in the loop
+ * @deprecated Keyboard input broken
  */
 @Deprecated
 public final class AppletPanel extends JPanel implements Runnable {
@@ -20,14 +20,11 @@ public final class AppletPanel extends JPanel implements Runnable {
 	private final ArrayList<Bullet> bullets;
 	private final ArrayList<Enemy> enemies;
 	private final ArrayList<PowerUp> powers;
+	private Main m = new Main();
 	private boolean isEnabled = false;
-	private int score = 0;
 	private int killedEnemy = 0;
 	private boolean debugEnabled;
 	private static boolean isPaused = false;
-	private static boolean isSoundMuted = false;
-	private static final int PRESS_PERIOD = 0x177;
-	private long lastPressMs = 0;
 
 	public AppletPanel() throws HeadlessException {
 		setEnabled(true);
@@ -38,7 +35,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 		setCursor(cursor);
 		addKeyListener(new KeyListenerEvent());
 		addMouseListener(new MouseListenerEvent());
-		player = new Player(this);
+		player = m.getPlayer();
 		bullets = new ArrayList<Bullet>();
 		enemies = new ArrayList<Enemy>();
 		powers = new ArrayList<PowerUp>();
@@ -55,7 +52,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				if (Main.collidesWith(player, e)) {
-					playSound("explosion.wav");
+					Main.playSound("explosion.wav");
 					enemies.remove(i);
 					player.removeLife(1);
 					if (e.isSmart()) {
@@ -63,7 +60,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 							Main.unlock(Main.ACHIEVE1);
 						}
 					} else {
-						reduceScore(1);
+						m.reduceScore(1);
 					}
 				}
 			}
@@ -71,13 +68,13 @@ public final class AppletPanel extends JPanel implements Runnable {
 				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
 					Enemy e = enemies.get(i);
 					if (Main.collidesWith(bullets.get(j), e)) {
-						playSound("hit.wav");
+						Main.playSound("hit.wav");
 						enemies.remove(i);
 						bullets.remove(j);
 						if (e.isSmart()) {
-							addScore(2);
+							m.addScore(2);
 						} else {
-							addScore(1);
+							m.addScore(1);
 						}
 						killedEnemy++;
 						if (killedEnemy == 100) {
@@ -89,9 +86,9 @@ public final class AppletPanel extends JPanel implements Runnable {
 			for (int i = 0; i < powers.size(); i++) {
 				if (Main.collidesWith(player, powers.get(i))) {
 					powers.remove(i);
-					playSound("powerup.wav");
+					Main.playSound("powerup.wav");
 					if (player.getLife() == 3) {
-						addScore(1);
+						m.addScore(1);
 					}
 					player.addLife(1);
 				}
@@ -141,7 +138,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 
 		g.setColor(Color.BLACK);
 		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-		g.drawString(Integer.toString(getScore()), 85, 45);
+		g.drawString(Integer.toString(m.getScore()), 85, 45);
 		g.drawString(Integer.toString(player.getLife()), 85, 60);
 		g.drawString("Score:", 40, 45);
 		g.drawString("HP:", 40, 60);
@@ -167,63 +164,16 @@ public final class AppletPanel extends JPanel implements Runnable {
 		repaint(5);
 	}
 
-	public static void setMuted(boolean muted) {
-		isSoundMuted = muted;
-	}
-
-	/**
-	 * Plays The sound
-	 * @param path Path to the Sound File
-	 * @param loop How Many Times The Sound Loop
-	 * @since version 1.7.4_Alpha
-	 */
-	public static void playSound(final String path, final int loop) {
-		try {
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(AppletPanel.class.getResource(path));
-			Clip clip = AudioSystem.getClip();
-			if (isSoundMuted) {
-				clip.stop();
-				clip.flush();
-				clip.close();
-			} else {
-				clip.open(audioIn);
-				if (loop != 0) {
-					clip.loop(loop);
-				} else {
-					clip.setFramePosition(0);
-					clip.start();
-				}
-			}
-		} catch (Exception e) {
-			System.err.println("Error: " + e.getMessage());
-			setMuted(true);
-		}
-	}
-
-	/**
-	 * Plays The sound
-	 * @param path Path to the Sound File
-	 * @since version 1.7_Alpha
-	 */
-	public static void playSound(final String path) {
-		playSound("/io/github/lambo993/game/sound/" + path, 0);
-	}
-
-	/**
-	 * Delays the bullet shooting
-	 * @since version 1.7.5_Alpha
-	 */
 	public void fireBullet() {
-		if (System.currentTimeMillis() - lastPressMs < PRESS_PERIOD) {
+		if (!Main.delayButton(375)) {
 			return;
 		}
-		lastPressMs = System.currentTimeMillis(); //FIXME: Pausing doesn't pause the bullet shooting time limit
 		shootBullet(10);
 	}
 
 	private void shootBullet(int spawnLimit) {
 		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
-			playSound("bullet.wav");
+			Main.playSound("bullet.wav");
 			Bullet b = new Bullet(player.getX() + 30, player.getY() - 12);
 			bullets.add(b);
 			Thread t = new Thread(b);
@@ -278,7 +228,6 @@ public final class AppletPanel extends JPanel implements Runnable {
 					onDisable();
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Error on disabling forcing close", "Disabling Error", JOptionPane.ERROR_MESSAGE);
-					//crashReport(ex);
 					System.exit(0);
 				}
 			}
@@ -292,18 +241,18 @@ public final class AppletPanel extends JPanel implements Runnable {
 
 	private void onEnable() {
 		System.out.println("Starting game...");
-		System.setProperty("spacecatastrophe.name", toString());
-		System.setProperty("spacecatastrophe.version", "1.8.3_Alpha");
+		System.setProperty("spacecatastrophe.name", m.toString());
+		System.setProperty("spacecatastrophe.version", "1.8.4_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
-		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
-		System.out.println("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
+		Main.playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
+		System.out.println("You are now running " + m.toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
 	private void onDisable() throws Exception {
-		setMuted(true);
+		Main.setMuted(true);
 		debugEnabled = false;
 		System.out.println("Closing game...");
-		setScore(0);
+		m.setScore(0);
 		player.setX(0);
 		player.setY(0);
 		player.setXVelocity(0);
@@ -318,10 +267,9 @@ public final class AppletPanel extends JPanel implements Runnable {
 	}
 
 	private void onReset() {
-		if (System.currentTimeMillis() - lastPressMs < PRESS_PERIOD) {
+		if (Main.delayButton(500)) {
 			return;
 		}
-		lastPressMs = System.currentTimeMillis();
 		System.out.println("Reseting...");
 		powers.removeAll(powers);
 		enemies.removeAll(enemies);
@@ -329,7 +277,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 		player.setLife(3);
 		player.setAlive(true);
 		killedEnemy = 0;
-		setScore(0);
+		m.setScore(0);
 		player.setX(400);
 		player.setY(300);
 		player.setXVelocity(0);
@@ -363,65 +311,6 @@ public final class AppletPanel extends JPanel implements Runnable {
 		return isPaused;
 	}
 
-	/**
-	 * Gets the score
-	 * @return The Value of the Score
-	 * @since version 1.4_Alpha
-	 */
-	public int getScore() {
-		if (score < 0) {
-			score = 0;
-		}
-		return score;
-	}
-
-	/**
-	 * Sets the score
-	 * @param score sets the score
-	 * @since version 1.4_Alpha
-	 */
-	public void setScore(int newScore) {
-		score = newScore;
-	}
-
-	/**
-	 * For adding scores
-	 * @param addScore Adds the score
-	 * @throws IllegalArgumentException When using negatives to <code>addScore</code>
-	 * @since version 1.5_Alpha
-	 */
-	public void addScore(int addScore) {
-		score += addScore;
-		if (addScore < 0) {
-			throw new IllegalArgumentException("You can't use negative");
-		}
-	}
-
-	/**
-	 * Removes the score if the score is more than 0
-	 * @param reduceScore Removes the score
-	 * @throws IllegalArgumentException When using negatives to <code>removeScore</code>
-	 * @since version 1.5_Alpha
-	 */
-	public void reduceScore(int reduceScore) {
-		if (score > 0) {
-			score -= reduceScore;
-		}
-		if (reduceScore < 0) {
-			throw new IllegalArgumentException("You can't use negative");
-		}
-	}
-
-	@Override
-	public String toString() {
-		return "The Amazing Space Catastrophe";
-	}
-
-	/**
-	 * The Keyboard key input.
-	 * @author Lamboling Seans
-	 * @since version 0.3_Alpha
-	 */
 	protected class KeyListenerEvent extends KeyAdapter {
 
 		@Override
@@ -459,17 +348,17 @@ public final class AppletPanel extends JPanel implements Runnable {
 				}
 				break;
 			case KeyEvent.VK_F8:
-				if (isSoundMuted) {
-					setMuted(false);
+				if (Main.isMuted()) {
+					Main.setMuted(false);
 					System.out.println("Unmuted");
 				} else {
-					setMuted(true);
+					Main.setMuted(true);
 					System.out.println("Mutted");
 				}
 				break;
 			case KeyEvent.VK_ESCAPE:
 				setPaused(true);
-				int i = JOptionPane.showConfirmDialog(AppletPanel.this, "Paused", AppletPanel.this.toString(), JOptionPane.YES_NO_OPTION);
+				int i = JOptionPane.showConfirmDialog(AppletPanel.this, "Paused", m.toString(), JOptionPane.YES_NO_OPTION);
 				if (i == 1 || i == -1) {
 					setPaused(false);
 					return;
@@ -501,11 +390,6 @@ public final class AppletPanel extends JPanel implements Runnable {
 		}
 	}
 
-	/**
-	 * The Mouse Key input
-	 * @author Lamboling Seans
-	 * @since version 0.7_Alpha
-	 */
 	protected class MouseListenerEvent extends MouseAdapter {
 
 		@Override
