@@ -10,7 +10,6 @@ import java.awt.*;
  */
 public final class Player extends Entity {
 
-	private int x, y;
 	private boolean isAlive;
 	private int lifePoint;
 	private Main m;
@@ -28,7 +27,7 @@ public final class Player extends Entity {
 	@Override
 	public void run() {
 		while (m.isEnabled()) {
-			if (!isPaused()) move(0, 20, 740, 560);
+			if (!isPaused()) move(0, 20, 740, 565);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
@@ -60,32 +59,16 @@ public final class Player extends Entity {
 	@Override
 	public void draw(Graphics2D g) {
 		if (isAlive()) {
-			g.drawImage(Main.loadImage("Ship.png"), getX(), getY(), m);
+			if (isMoving()) { 
+				g.drawImage(Main.loadImage("Ship.png"), getX(), getY(), m);
+			} else {
+				g.drawImage(Main.loadImage("ShipOff.png"), getX(), getY(), m);
+			}
 		} else {
 			g.setColor(Color.BLACK);
 			g.drawString("You Died!", 400, 300);
 			g.drawString("Press \"R\" to try again!", 350, 325);
 		}
-	}
-
-	@Override
-	public int getX() {
-		return x;
-	}
-
-	@Override
-	public int getY() {
-		return y;
-	}
-
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	@Override
-	public void setY(int y) {
-		this.y = y;
 	}
 	/**
 	 * Checks if the player is alive or died
@@ -157,7 +140,7 @@ public final class Player extends Entity {
 
 	@Override
 	public Rectangle getHitbox() {
-		return new Rectangle(getX(), getY(), 69, 42);
+		return new Rectangle(getX(), getY(), 69, 33);
 	}
 
 	@Override
@@ -167,6 +150,6 @@ public final class Player extends Entity {
 
 	@Override
 	public String toString() {
-		return "Player";
+		return getType().getName();
 	}
 }

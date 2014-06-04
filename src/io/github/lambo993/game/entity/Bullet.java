@@ -10,7 +10,9 @@ import java.awt.*;
  */
 public class Bullet extends Entity {
 
-	private int x, y;
+	public Bullet(Player player) {
+		this(player.getX() + 30, player.getY() - 12);
+	}
 
 	public Bullet(int xCoord, int yCoord) {
 		setX(xCoord);
@@ -25,7 +27,7 @@ public class Bullet extends Entity {
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
+				Main.LOGGER.warning("Error: Thread Interrupted.");
 			}
 		}
 	}
@@ -51,26 +53,6 @@ public class Bullet extends Entity {
 	}
 
 	@Override
-	public int getX() {
-		return x;
-	}
-
-	@Override
-	public int getY() {
-		return y;
-	}
-
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	@Override
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	@Override
 	public Rectangle getHitbox() {
 		return new Rectangle(getX(), getY() + 3, 10, 21);
 	}
@@ -82,6 +64,6 @@ public class Bullet extends Entity {
 
 	@Override
 	public String toString() {
-		return "Bullet";
+		return getType().getName();
 	}
 }

@@ -10,7 +10,7 @@ import java.awt.*;
 public abstract class Entity implements Runnable {
 
 	private boolean isPaused = false;
-	private int xVelocity , yVelocity;
+	private int x, y, xVelocity , yVelocity;
 
 	/**
 	 * Moves the <code>Entity</code> and limit the <code>Entity</code> movement on the screen.
@@ -45,7 +45,9 @@ public abstract class Entity implements Runnable {
 	 * Gets the <code>Entity</code> X Location of the screen
 	 * @return the X Location of the screen
 	 */
-	public abstract int getX();
+	public int getX() {
+		return x;
+	}
 
 	public int getXVelocity() {
 		return xVelocity;
@@ -55,7 +57,9 @@ public abstract class Entity implements Runnable {
 	 * Gets the <code>Entity</code> Y Location of the screen
 	 * @return the Y Location of the screen
 	 */
-	public abstract int getY();
+	public int getY() {
+		return y;
+	}
 
 	public int getYVelocity() {
 		return yVelocity;
@@ -65,7 +69,9 @@ public abstract class Entity implements Runnable {
 	 * Sets the <code>Entity</code> X coordinate of the screen
 	 * @param x the new X Location of the screen
 	 */
-	public abstract void setX(int x);
+	public void setX(int x) {
+		this.x = x;
+	}
 
 	public void setXVelocity(int xVelocity) {
 		this.xVelocity = xVelocity;
@@ -75,10 +81,16 @@ public abstract class Entity implements Runnable {
 	 * Sets the <code>Entity</code> Y coordinate of the screen
 	 * @param y the new Y Location of the screen
 	 */
-	public abstract void setY(int y);
+	public void setY(int y) {
+		this.y = y;
+	}
 
 	public void setYVelocity(int yVelocity) {
 		this.yVelocity = yVelocity;
+	}
+
+	public boolean isMoving() {
+		return getXVelocity() != 0 || getYVelocity() != 0;
 	}
 
 	public boolean isPaused() {

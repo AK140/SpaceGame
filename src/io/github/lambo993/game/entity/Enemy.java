@@ -11,13 +11,12 @@ import java.util.Random;
  */
 public class Enemy extends Entity {
 
-	private int x, y;
 	private boolean isIgnoring = false;
 
 	public Enemy() {
+		Random rng = new Random();
 		setX(400);
 		setY(50);
-		Random rng = new Random();
 		setXVelocity(-1 + rng.nextInt(3));
 		setYVelocity(-1 + rng.nextInt(3));
 		if (getXVelocity() == 0 && getYVelocity() == 0) {
@@ -61,26 +60,6 @@ public class Enemy extends Entity {
 	}
 
 	@Override
-	public int getX() {
-		return x;
-	}
-
-	@Override
-	public int getY() {
-		return y;
-	}
-
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	@Override
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	@Override
 	public Rectangle getHitbox() {
 		return new Rectangle(getX(), getY(), 11, 11);
 	}
@@ -92,6 +71,6 @@ public class Enemy extends Entity {
 
 	@Override
 	public String toString() {
-		return "Enemy";
+		return getType().getName();
 	}
 }

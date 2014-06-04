@@ -2,15 +2,12 @@ package io.github.lambo993.game;
 
 import io.github.lambo993.engine.*;
 import io.github.lambo993.game.entity.*;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 import javax.sound.sampled.*;
 import javax.swing.*;
 
@@ -18,7 +15,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.8.4_Alpha
+ * @version 1.8.5_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -56,8 +53,7 @@ public final class Main extends Engine {
 		super("Space Catastrophe", 800, 600, createWindows);
 		if (createWindows) {
 			setBackground(Color.BLACK);
-			Cursor cursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
-			setCursor(cursor);
+			setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 			addKeyListener(new KeyListenerEvent());
 			addMouseListener(new MouseListenerEvent());
 			addWindowListener(new WindowsListener());
@@ -66,11 +62,11 @@ public final class Main extends Engine {
 		bullets = new ArrayList<Bullet>();
 		enemies = new ArrayList<Enemy>();
 		powers = new ArrayList<PowerUp>();
-		new Thread(player).start();
 	}
 
 	@Override
 	public void run() {
+		new Thread(player, "Player").start();
 		while (isEnabled()) {
 			for (int i = 0; i < bullets.size(); i++) {
 				if (bullets.get(i).isOffScreen())
@@ -83,7 +79,7 @@ public final class Main extends Engine {
 					enemies.remove(i);
 					player.removeLife(1);
 					if (e.isSmart()) {
-						if (e.getY() > player.getY()) {
+						if (e.getY() > player.getY() + 10) {
 							unlock(ACHIEVE1);
 						}
 					} else {
@@ -94,7 +90,7 @@ public final class Main extends Engine {
 			for (int i = enemies.size() - 1; i >= 0; i--) {
 				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
 					Enemy e = enemies.get(i);
-					if (collidesWith(bullets.get(j), e)) {
+					if (collidesWith(e, bullets.get(j))) {
 						playSound("hit.wav");
 						enemies.remove(i);
 						bullets.remove(j);
@@ -137,16 +133,7 @@ public final class Main extends Engine {
 	}
 
 	@Override
-	public void paint(Graphics g) {
-		BufferedImage dbImg = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-		Graphics2D dbg = dbImg.createGraphics();
-		draw(dbg);
-		g.drawImage(dbImg, 0, 0, this);
-	}
-
-	@Override
 	public void draw(final Graphics2D g) {
-		//TODO: Make better space-like background and moving it
 		g.drawImage(loadImage("BackGround.png"), 0, 0, this);
 		player.draw(g);
 		if (debugEnabled && player.isAlive()) g.draw(player.getHitbox());
@@ -168,28 +155,19 @@ public final class Main extends Engine {
 
 		g.setColor(Color.BLACK);
 		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-		g.drawString(Integer.toString(getScore()), 85, 45);
-		g.drawString(Integer.toString(player.getLife()), 85, 60);
-		g.drawString("Score:", 40, 45);
-		g.drawString("HP:", 40, 60);
+		g.drawString("Score: " + getScore(), 40, 45);
+		g.drawString("HP:    " + player.getLife(), 40, 60);
 		if (debugEnabled) {
-			g.drawString("x:", 735, 45);
-			g.drawString("y:", 735, 60);
-			g.drawString("b:", 735, 75);
-			g.drawString("e:", 735, 90);
-			g.drawString("gcmax:", 707, 105);
-			g.drawString("gctotal:", 693, 120);
-			g.drawString("gcfree:", 700, 135);
-			g.drawString(Integer.toString(player.getX()), 760, 45);
-			g.drawString(Integer.toString(player.getY()), 760, 60);
-			g.drawString(Integer.toString(bullets.size()), 760, 75);
-			g.drawString(Integer.toString(enemies.size()), 760, 90);
+			g.drawString("x: " + player.getX(), 735, 45);
+			g.drawString("y: " + player.getY(), 735, 60);
+			g.drawString("b: " + bullets.size(), 735, 75);
+			g.drawString("e: " + enemies.size(), 735, 90);
 			long max = Runtime.getRuntime().maxMemory() / 1024 / 1024;
 			long total = Runtime.getRuntime().totalMemory() / 1024 / 1024;
 			long free = Runtime.getRuntime().freeMemory() / 1024 / 1024;
-			g.drawString(Long.toString(max), 760, 105);
-			g.drawString(Long.toString(total), 760, 120);
-			g.drawString(Long.toString(free), 760, 135);
+			g.drawString("gcmax: " + max, 707, 105);
+			g.drawString("gctotal: " + total, 693, 120);
+			g.drawString("gcfree: " + free, 700, 135);
 		}
 		repaint(5);
 	}
@@ -214,7 +192,7 @@ public final class Main extends Engine {
 	}
 
 	public static void sleep() throws InterruptedException {
-		Thread.sleep(5);
+		Thread.sleep(5); //TODO: Make a better game loop
 	}
 
 	/**
@@ -235,7 +213,7 @@ public final class Main extends Engine {
 			Player p = (Player)collidee;
 			if (!p.isAlive()) return false;
 		}
-		if (collider == collidee || collider == null || collidee == null) {
+		if (collider == collidee || collider == null || collidee == null || collider.isPaused() || collidee.isPaused()) {
 			return false;
 		}
 
@@ -243,7 +221,7 @@ public final class Main extends Engine {
 	}
 
 	public static void unlock(Achievements a) {
-		if (!a.isUnlocked()) {
+		if (!a.isUnlocked() && !isPaused()) {
 			LOGGER.info("Achievements unlocked! " + a.getName());
 			a.setUnlocked(true);
 			playSound("achievement.wav");
@@ -268,10 +246,9 @@ public final class Main extends Engine {
 	private void shootBullet(int spawnLimit) {
 		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			playSound("bullet.wav");
-			Bullet b = new Bullet(player.getX() + 30, player.getY() - 12);
+			Bullet b = new Bullet(player);
 			bullets.add(b);
-			Thread t = new Thread(b);
-			t.start();
+			new Thread(b, "Bullet-" + bulletsShooted).start();
 			bulletsShooted++;
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
@@ -289,22 +266,21 @@ public final class Main extends Engine {
 	}
 
 	protected void spawnEnemy(int spawnLimit) {
-		if (enemies.size() < spawnLimit && player.isAlive()) {
+		if (enemies.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			int chance = new Random().nextInt();
+			Enemy e;
 			if ((chance % 2) == 0) {
-				SmartEnemy se = new SmartEnemy(player);
-				enemies.add(se);
-				new Thread(se).start();
+				e = new SmartEnemy(player);
 			} else {
-				Enemy e = new Enemy();
-				enemies.add(e);
-				new Thread(e).start();
+				e = new Enemy();
 			}
+			enemies.add(e);
+			new Thread(e).start();
 		}
 	}
 
 	protected void spawnPowers(int spawnLimit) {
-		if (powers.size() < spawnLimit && player.isAlive()) {
+		if (powers.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			PowerUp p = new PowerUp();
 			powers.add(p);
 			new Thread(p).start();
@@ -315,15 +291,22 @@ public final class Main extends Engine {
 	protected void onEnable() {
 		LOGGER.info("Starting game...");
 		System.setProperty("spacecatastrophe.name", toString());
-		System.setProperty("spacecatastrophe.version", "1.8.4_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.5_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
-		int i = JOptionPane.showConfirmDialog(null, "Start Game", toString(),
-				JOptionPane.DEFAULT_OPTION);
-		if (i == -1) {
+		/*
+		Object obj = JOptionPane.showInputDialog(this, "Menu", toString(), JOptionPane.PLAIN_MESSAGE,
+				new ImageIcon(Main.class.getResource("/io/github/lambo993/game/images/Ship.png")),
+				new Object[] { "Play", "MultiPlayer", "Settings", "Exit" }, "Play");
+		if (obj.equals("Exit")) {
 			LOGGER.info("Closed game");
 			System.exit(1);
 			return;
-		}
+		} else if (obj.equals("MultiPlayer")) {
+			multiPlayer();
+			return;
+		} else if (obj.equals("Settings")) {
+			LOGGER.info("Not supported yet");
+		} //*/
 		setIconImage(loadImage("Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		LOGGER.info("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
@@ -489,49 +472,50 @@ public final class Main extends Engine {
 		}
 	}
 
+	public void multiPlayer() {
+		if (isDisplayable()) {
+			return; //Make sure display haven't been created yet
+		}
+		try {
+			String fullIp = JOptionPane.showInputDialog("Enter ip address and port");
+			String[] partialIp = fullIp.split(":");
+			int port;
+			if (partialIp.length == 1 || partialIp.length < 3) {
+				port = 25575;
+			} else {
+				try {
+					port = Integer.parseInt(partialIp[1]);
+				} catch (NumberFormatException ex) {
+					port = 25575;
+				}
+			}
+			Socket server = new Socket(partialIp[0], port);
+			if (server.isConnected()) {
+				LOGGER.info("Connected to " + fullIp);
+			}
+			server.close();
+		} catch (UnknownHostException ex) {
+			ex.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Unknown host", "java.net.UnkownHostException", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
+	}
+
 	/**
 	 * The Main method.
 	 * @param args the JVM Arguments
 	 * @since version 0.1_Alpha
 	 */
 	public static final void main(final String[] args) {
-		if (args.length == 1 && args[0].equalsIgnoreCase("-server")) {
-			JOptionPane.showMessageDialog(null, "The server feature supposed to be hidden!");
-			try {
-				String fullIp = JOptionPane.showInputDialog("Enter ip address and port");
-				String[] partialIp = fullIp.split(":");
-				int port;
-				if (partialIp.length == 1 || partialIp.length < 3) {
-					port = 25575;
-				} else {
-					try {
-						port = Integer.parseInt(partialIp[1]);
-					} catch (NumberFormatException ex) {
-						port = 25575;
-					}
-				}
-				Socket server = new Socket(partialIp[0], port);
-				if (server.isConnected()) {
-					LOGGER.info("Connected to " + fullIp);
-				}
-				server.close();
-			} catch (UnknownHostException ex) {
-				ex.printStackTrace();
-				JOptionPane.showMessageDialog(null, "Unknown host", "java.net.UnkownHostException", JOptionPane.ERROR_MESSAGE);
-				System.exit(0);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				System.exit(0);
-			}
-		}
 		Main m = new Main(true);
-		new Thread(m).start();
+		new Thread(m, "MainLoop").start();
 		do {
-			if (!isPaused()) {
-				m.spawnEnemy(15);
-				m.spawnPowers(1);
-			}
+			m.spawnEnemy(15);
+			m.spawnPowers(1);
 			try {
 				Thread.sleep(3 * 1000); //FIXME: Pausing or restart doesn't restart or pause the timings
 			} catch (InterruptedException ex) {

@@ -6,12 +6,17 @@ import java.util.Random;
 
 public class PowerUp extends Entity {
 
-	private int x, y;
-
 	public PowerUp() {
-		setX(400);
-		setY(50);
 		Random rng = new Random();
+		int x = rng.nextInt(770);
+		int y = rng.nextInt(570);
+		if (x < 1) {
+			x = 2;
+		} else if (y < 15) {
+			y = 16;
+		}
+		setX(x);
+		setY(y);
 		setXVelocity(-1 + rng.nextInt(3));
 		setYVelocity(-1 + rng.nextInt(3));
 		if (getXVelocity() == 0 && getYVelocity() == 0) {
@@ -23,11 +28,11 @@ public class PowerUp extends Entity {
 	@Override
 	public void run() {
 		while (true) {
-			move(0, 0, 790, 590);
+			move(0, 15, 790, 590);
 			try {
 				Main.sleep();
 			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
+				Main.LOGGER.warning("Error: Thread Interrupted.");
 			}
 		}
 	}
@@ -36,26 +41,6 @@ public class PowerUp extends Entity {
 	public void draw(Graphics2D g) {
 		g.setColor(Color.GREEN);
 		g.fillOval(getX(), getY(), 7, 7);
-	}
-
-	@Override
-	public int getX() {
-		return x;
-	}
-
-	@Override
-	public int getY() {
-		return y;
-	}
-
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	@Override
-	public void setY(int y) {
-		this.y = y;
 	}
 
 	@Override
@@ -70,6 +55,6 @@ public class PowerUp extends Entity {
 
 	@Override
 	public String toString() {
-		return "PowerUp";
+		return getType().getName();
 	}
 }

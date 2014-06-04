@@ -18,7 +18,7 @@ public class MainApplet extends JApplet implements Runnable {
 
 	public MainApplet() {
 		panel = new AppletPanel();
-		new Thread(panel).start();
+		new Thread(panel, "Spawn").start();
 		getContentPane().add(panel, BorderLayout.CENTER);
 	}
 

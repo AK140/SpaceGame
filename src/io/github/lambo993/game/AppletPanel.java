@@ -31,8 +31,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 		setSize(800, 600);
 		setBackground(Color.BLACK);
 		setVisible(true);
-		Cursor cursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
-		setCursor(cursor);
+		setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 		addKeyListener(new KeyListenerEvent());
 		addMouseListener(new MouseListenerEvent());
 		player = m.getPlayer();
@@ -174,7 +173,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 	private void shootBullet(int spawnLimit) {
 		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			Main.playSound("bullet.wav");
-			Bullet b = new Bullet(player.getX() + 30, player.getY() - 12);
+			Bullet b = new Bullet(player);
 			bullets.add(b);
 			Thread t = new Thread(b);
 			t.start();
@@ -242,7 +241,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 	private void onEnable() {
 		System.out.println("Starting game...");
 		System.setProperty("spacecatastrophe.name", m.toString());
-		System.setProperty("spacecatastrophe.version", "1.8.4_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.5_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
 		Main.playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		System.out.println("You are now running " + m.toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
@@ -267,7 +266,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 	}
 
 	private void onReset() {
-		if (Main.delayButton(500)) {
+		if (!Main.delayButton(500)) {
 			return;
 		}
 		System.out.println("Reseting...");

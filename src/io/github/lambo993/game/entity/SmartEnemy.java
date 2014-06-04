@@ -22,7 +22,7 @@ public class SmartEnemy extends Enemy {
 	public void run() {
 		while (true) {
 			int x = player.getX() + 30;
-			int y = player.getY() + 10;
+			int y = player.getY() + 8;
 			int x1 = x + 50;
 			int x2 = x - 50;
 			if (getX() == x && player.isAlive() && !isIgnoring()) {
