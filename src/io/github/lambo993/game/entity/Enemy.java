@@ -15,7 +15,7 @@ public class Enemy extends Entity {
 
 	public Enemy() {
 		Random rng = new Random();
-		setX(400);
+		setX(rng.nextInt(580));
 		setY(50);
 		setXVelocity(-1 + rng.nextInt(3));
 		setYVelocity(-1 + rng.nextInt(3));
@@ -29,11 +29,7 @@ public class Enemy extends Entity {
 	public void run() {
 		while (true) {
 			move(0, 5, 790, 590);
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 

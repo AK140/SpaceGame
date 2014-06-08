@@ -124,11 +124,7 @@ public final class Main extends Engine {
 					}
 				}
 			}
-			try {
-				sleep();
-			} catch (InterruptedException ex) {
-				LOGGER.severe("Error: Thread Interrupted.");
-			}
+			sleep();
 		}
 	}
 
@@ -191,8 +187,12 @@ public final class Main extends Engine {
 		playSound("/io/github/lambo993/game/sound/" + path, 0);
 	}
 
-	public static void sleep() throws InterruptedException {
-		Thread.sleep(5); //TODO: Make a better game loop
+	public static void sleep() {
+		try {
+			Thread.sleep(5); //TODO: Make a better game loop
+		} catch (InterruptedException ex) {
+			LOGGER.warning("Error: Thread Interrupted.");
+		}
 	}
 
 	/**
@@ -213,7 +213,7 @@ public final class Main extends Engine {
 			Player p = (Player)collidee;
 			if (!p.isAlive()) return false;
 		}
-		if (collider == collidee || collider == null || collidee == null || collider.isPaused() || collidee.isPaused()) {
+		if (collider == collidee || collider == null || collidee == null || isPaused()) {
 			return false;
 		}
 
@@ -244,12 +244,11 @@ public final class Main extends Engine {
 	}
 
 	private void shootBullet(int spawnLimit) {
-		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
-			playSound("bullet.wav");
+		if (bullets.size() < spawnLimit && player.isAlive()) {
 			Bullet b = new Bullet(player);
 			bullets.add(b);
-			new Thread(b, "Bullet-" + bulletsShooted).start();
 			bulletsShooted++;
+			new Thread(b, "Bullet-" + bulletsShooted).start();
 			for (int i = 0; i < enemies.size(); i++) {
 				Enemy e = enemies.get(i);
 				if (e.isSmart() && b.getX() == e.getX() && b.getY() > e.getY() && !e.isIgnoring()) {

@@ -43,11 +43,7 @@ public class SmartEnemy extends Enemy {
 					setIgnoring(false);
 				}
 			}
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 

@@ -28,11 +28,7 @@ public final class Player extends Entity {
 	public void run() {
 		while (m.isEnabled()) {
 			if (!isPaused()) move(0, 20, 740, 565);
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				Main.LOGGER.severe("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 
@@ -59,11 +55,13 @@ public final class Player extends Entity {
 	@Override
 	public void draw(Graphics2D g) {
 		if (isAlive()) {
+			String p;
 			if (isMoving()) { 
-				g.drawImage(Main.loadImage("Ship.png"), getX(), getY(), m);
+				p = "Ship.png";
 			} else {
-				g.drawImage(Main.loadImage("ShipOff.png"), getX(), getY(), m);
+				p = "ShipOff.png";
 			}
+			g.drawImage(Main.loadImage(p), getX(), getY(), m);
 		} else {
 			g.setColor(Color.BLACK);
 			g.drawString("You Died!", 400, 300);

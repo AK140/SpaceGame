@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
-import javax.sound.sampled.*;
 import javax.swing.*;
 
 /**
@@ -99,11 +98,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 					}
 				}
 			}
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				System.err.println("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 
@@ -172,7 +167,6 @@ public final class AppletPanel extends JPanel implements Runnable {
 
 	private void shootBullet(int spawnLimit) {
 		if (bullets.size() < spawnLimit && player.isAlive() && !isPaused()) {
-			Main.playSound("bullet.wav");
 			Bullet b = new Bullet(player);
 			bullets.add(b);
 			Thread t = new Thread(b);
@@ -221,7 +215,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 			isEnabled = enabled;
 
 			if (isEnabled) {
-				onEnable();
+				m.onEnable();
 			} else {
 				try {
 					onDisable();
@@ -236,15 +230,6 @@ public final class AppletPanel extends JPanel implements Runnable {
 	@Override
 	public boolean isEnabled() {
 		return isEnabled;
-	}
-
-	private void onEnable() {
-		System.out.println("Starting game...");
-		System.setProperty("spacecatastrophe.name", m.toString());
-		System.setProperty("spacecatastrophe.version", "1.8.5_Alpha");
-		System.setProperty("spacecatastrophe.author", "Lambo993");
-		Main.playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
-		System.out.println("You are now running " + m.toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
 	private void onDisable() throws Exception {

@@ -15,20 +15,19 @@ public class Bullet extends Entity {
 	}
 
 	public Bullet(int xCoord, int yCoord) {
-		setX(xCoord);
-		setY(yCoord);
-		setYVelocity(-4);
+		if (!isPaused()) {
+			setX(xCoord);
+			setY(yCoord);
+			setYVelocity(-4);
+			Main.playSound("bullet.wav");
+		}
 	}
 
 	@Override
 	public void run() {
 		while (true) {
 			if (!isPaused()) move(0, 0, 0, 0);
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				Main.LOGGER.warning("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 

@@ -1,16 +1,14 @@
 package io.github.lambo993.game.entity;
 
+import io.github.lambo993.engine.*;
 import java.awt.*;
 
 /**
  * An interface for Entity methods
- * @author Lamboling Seans
+ * @author Lambo993
  * @since version 1.4_Alpha
  */
-public abstract class Entity implements Runnable {
-
-	private boolean isPaused = false;
-	private int x, y, xVelocity , yVelocity;
+public abstract class Entity extends EntityBase implements Runnable {
 
 	/**
 	 * Moves the <code>Entity</code> and limit the <code>Entity</code> movement on the screen.
@@ -40,66 +38,6 @@ public abstract class Entity implements Runnable {
 	}
 
 	public abstract void draw(Graphics2D g);
-
-	/**
-	 * Gets the <code>Entity</code> X Location of the screen
-	 * @return the X Location of the screen
-	 */
-	public int getX() {
-		return x;
-	}
-
-	public int getXVelocity() {
-		return xVelocity;
-	}
-
-	/**
-	 * Gets the <code>Entity</code> Y Location of the screen
-	 * @return the Y Location of the screen
-	 */
-	public int getY() {
-		return y;
-	}
-
-	public int getYVelocity() {
-		return yVelocity;
-	}
-
-	/**
-	 * Sets the <code>Entity</code> X coordinate of the screen
-	 * @param x the new X Location of the screen
-	 */
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	public void setXVelocity(int xVelocity) {
-		this.xVelocity = xVelocity;
-	}
-
-	/**
-	 * Sets the <code>Entity</code> Y coordinate of the screen
-	 * @param y the new Y Location of the screen
-	 */
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	public void setYVelocity(int yVelocity) {
-		this.yVelocity = yVelocity;
-	}
-
-	public boolean isMoving() {
-		return getXVelocity() != 0 || getYVelocity() != 0;
-	}
-
-	public boolean isPaused() {
-		return isPaused;
-	}
-
-	public void setPaused(boolean paused) {
-		isPaused = paused;
-	}
 
 	/**
 	 * Get's the size of the hit box

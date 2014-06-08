@@ -8,14 +8,11 @@ public class PowerUp extends Entity {
 
 	public PowerUp() {
 		Random rng = new Random();
-		int x = rng.nextInt(770);
-		int y = rng.nextInt(570);
-		if (x < 1) {
-			x = 2;
-		} else if (y < 15) {
+		int y = rng.nextInt(580);
+		if (y <= 15) {
 			y = 16;
 		}
-		setX(x);
+		setX(rng.nextInt(780));
 		setY(y);
 		setXVelocity(-1 + rng.nextInt(3));
 		setYVelocity(-1 + rng.nextInt(3));
@@ -29,11 +26,7 @@ public class PowerUp extends Entity {
 	public void run() {
 		while (true) {
 			move(0, 15, 790, 590);
-			try {
-				Main.sleep();
-			} catch (InterruptedException ex) {
-				Main.LOGGER.warning("Error: Thread Interrupted.");
-			}
+			Main.sleep();
 		}
 	}
 
