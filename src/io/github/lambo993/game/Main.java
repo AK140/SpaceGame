@@ -15,7 +15,7 @@ import javax.swing.*;
  * The Main class
  * Handles the entities thread, the frames and the input
  * @author Lamboling Seans
- * @version 1.8.5_Alpha
+ * @version 1.8.6_Alpha
  * @since 7/14/2013
  * @serial 5832158247289767468L
  */
@@ -33,7 +33,7 @@ public final class Main extends Engine {
 	private static boolean isPaused = false;
 	public static final Achievements ACHIEVE1 = Achievements.BACK_WAY;
 	public static final Achievements ACHIEVE2 = Achievements.MY_LOVE;
-	public static final Achievements ACHIEVE3 = Achievements.RIGHT_CLICK;
+	public static final Achievements ACHIEVE3 = Achievements.MIDDLE_CLICK;
 	public static final Achievements ACHIEVE4 = Achievements.KILLER;
 
 	/**
@@ -51,17 +51,17 @@ public final class Main extends Engine {
 	 */
 	protected Main(final boolean createWindows) throws HeadlessException {
 		super("Space Catastrophe", 800, 600, createWindows);
+		player = new Player(this);
+		bullets = new ArrayList<Bullet>();
+		enemies = new ArrayList<Enemy>();
+		powers = new ArrayList<PowerUp>();
 		if (createWindows) {
-			setBackground(Color.BLACK);
+			setIconImage(loadImage("Ship.png"));
 			setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 			addKeyListener(new KeyListenerEvent());
 			addMouseListener(new MouseListenerEvent());
 			addWindowListener(new WindowsListener());
 		}
-		player = new Player(this);
-		bullets = new ArrayList<Bullet>();
-		enemies = new ArrayList<Enemy>();
-		powers = new ArrayList<PowerUp>();
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public final class Main extends Engine {
 				if (bullets.get(i).isOffScreen())
 					bullets.remove(i);
 			}
-			for (int i = 0; i < enemies.size(); i++) {
+			for (int i = enemies.size() - 1; i >= 0; i--) {
 				Enemy e = enemies.get(i);
 				if (collidesWith(player, e)) {
 					playSound("explosion.wav");
@@ -86,10 +86,7 @@ public final class Main extends Engine {
 						reduceScore(1);
 					}
 				}
-			}
-			for (int i = enemies.size() - 1; i >= 0; i--) {
 				for (int j = bullets.size() - 1; j >= 0 && i < enemies.size(); j--) {
-					Enemy e = enemies.get(i);
 					if (collidesWith(e, bullets.get(j))) {
 						playSound("hit.wav");
 						enemies.remove(i);
@@ -107,7 +104,8 @@ public final class Main extends Engine {
 				}
 			}
 			for (int i = 0; i < powers.size(); i++) {
-				if (collidesWith(player, powers.get(i))) {
+				PowerUp p = powers.get(i);
+				if (collidesWith(player, p)) {
 					powers.remove(i);
 					playSound("powerup.wav");
 					if (player.getLife() == 3) {
@@ -116,10 +114,8 @@ public final class Main extends Engine {
 					player.addLife(1);
 					powersCollected++;
 				}
-			}
-			for (int i = 0; i < powers.size(); i++) {
 				for (int j = 0; j < bullets.size(); j++) {
-					if (collidesWith(bullets.get(j), powers.get(i))) {
+					if (collidesWith(bullets.get(j), p)) {
 						unlock(ACHIEVE2);
 					}
 				}
@@ -132,7 +128,6 @@ public final class Main extends Engine {
 	public void draw(final Graphics2D g) {
 		g.drawImage(loadImage("BackGround.png"), 0, 0, this);
 		player.draw(g);
-		if (debugEnabled && player.isAlive()) g.draw(player.getHitbox());
 		for (int i = 0; i < bullets.size(); i++) {
 			Bullet b = bullets.get(i);
 			if (debugEnabled) g.draw(b.getHitbox());
@@ -143,7 +138,7 @@ public final class Main extends Engine {
 			if (debugEnabled) g.draw(e.getHitbox());
 			e.draw(g);
 		}
-		for (int i = 0; i < powers.size(); i++) {
+		for (int i = 0; i < powers.size() ;i++) {
 			PowerUp p = powers.get(i);
 			if (debugEnabled) g.draw(p.getHitbox());
 			p.draw(g);
@@ -154,6 +149,7 @@ public final class Main extends Engine {
 		g.drawString("Score: " + getScore(), 40, 45);
 		g.drawString("HP:    " + player.getLife(), 40, 60);
 		if (debugEnabled) {
+			if (player.isAlive()) g.draw(player.getHitbox());
 			g.drawString("x: " + player.getX(), 735, 45);
 			g.drawString("y: " + player.getY(), 735, 60);
 			g.drawString("b: " + bullets.size(), 735, 75);
@@ -165,7 +161,6 @@ public final class Main extends Engine {
 			g.drawString("gctotal: " + total, 693, 120);
 			g.drawString("gcfree: " + free, 700, 135);
 		}
-		repaint(5);
 	}
 
 	/**
@@ -191,7 +186,7 @@ public final class Main extends Engine {
 		try {
 			Thread.sleep(5); //TODO: Make a better game loop
 		} catch (InterruptedException ex) {
-			LOGGER.warning("Error: Thread Interrupted.");
+			LOGGER.severe("Error: Thread Interrupted.");
 		}
 	}
 
@@ -264,7 +259,7 @@ public final class Main extends Engine {
 		}
 	}
 
-	protected void spawnEnemy(int spawnLimit) {
+	private void spawnEnemy(int spawnLimit) {
 		if (enemies.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			int chance = new Random().nextInt();
 			Enemy e;
@@ -278,7 +273,7 @@ public final class Main extends Engine {
 		}
 	}
 
-	protected void spawnPowers(int spawnLimit) {
+	private void spawnPowers(int spawnLimit) {
 		if (powers.size() < spawnLimit && player.isAlive() && !isPaused()) {
 			PowerUp p = new PowerUp();
 			powers.add(p);
@@ -290,10 +285,9 @@ public final class Main extends Engine {
 	protected void onEnable() {
 		LOGGER.info("Starting game...");
 		System.setProperty("spacecatastrophe.name", toString());
-		System.setProperty("spacecatastrophe.version", "1.8.5_Alpha");
+		System.setProperty("spacecatastrophe.version", "1.8.6_Alpha");
 		System.setProperty("spacecatastrophe.author", "Lambo993");
-		/*
-		Object obj = JOptionPane.showInputDialog(this, "Menu", toString(), JOptionPane.PLAIN_MESSAGE,
+		/*Object obj = JOptionPane.showInputDialog(this, "Menu", toString(), JOptionPane.PLAIN_MESSAGE,
 				new ImageIcon(Main.class.getResource("/io/github/lambo993/game/images/Ship.png")),
 				new Object[] { "Play", "MultiPlayer", "Settings", "Exit" }, "Play");
 		if (obj.equals("Exit")) {
@@ -306,13 +300,12 @@ public final class Main extends Engine {
 		} else if (obj.equals("Settings")) {
 			LOGGER.info("Not supported yet");
 		} //*/
-		setIconImage(loadImage("Ship.png"));
 		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		LOGGER.info("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
 	@Override
-	protected void onDisable() throws Exception {
+	protected void onDisable() {
 		setMuted(true);
 		debugEnabled = false;
 		LOGGER.info("Closing game...");
@@ -322,9 +315,9 @@ public final class Main extends Engine {
 		player.setY(0);
 		player.setXVelocity(0);
 		player.setYVelocity(0);
-		enemies.removeAll(enemies);
-		bullets.removeAll(bullets);
-		powers.removeAll(powers);
+		enemies.clear();
+		bullets.clear();
+		powers.clear();
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		setTitle("");
 		setBackground(Color.WHITE);
@@ -339,9 +332,9 @@ public final class Main extends Engine {
 			return;
 		}
 		LOGGER.info("Reseting...");
-		powers.removeAll(powers);
-		enemies.removeAll(enemies);
-		bullets.removeAll(bullets);
+		powers.clear();
+		enemies.clear();
+		bullets.clear();
 		player.setLife(3);
 		player.setAlive(true);
 		bulletsShooted = 0;
@@ -357,22 +350,9 @@ public final class Main extends Engine {
 	private void setPaused(boolean paused) {
 		if (isPaused() != paused) {
 			isPaused = paused;
-			player.setPaused(paused);
 			if (player.isPaused()) {
 				player.setXVelocity(0);
 				player.setYVelocity(0);
-			}
-			for (int i = 0; i < enemies.size(); i++) {
-				Enemy e = enemies.get(i);
-				e.setPaused(paused);
-			}
-			for (int i = 0; i < bullets.size(); i++) {
-				Bullet b = bullets.get(i);
-				b.setPaused(paused);
-			}
-			for (int i = 0; i < powers.size(); i++) {
-				PowerUp p = powers.get(i);
-				p.setPaused(paused);
 			}
 		}
 	}
@@ -509,7 +489,7 @@ public final class Main extends Engine {
 	 * @param args the JVM Arguments
 	 * @since version 0.1_Alpha
 	 */
-	public static final void main(final String[] args) {
+	public static void main(final String[] args) {
 		Main m = new Main(true);
 		new Thread(m, "MainLoop").start();
 		do {
@@ -621,13 +601,21 @@ public final class Main extends Engine {
 	protected class MouseListenerEvent extends MouseAdapter {
 
 		@Override
-		public void mousePressed(MouseEvent event) {
-			switch (event.getButton()) {
+		public void mousePressed(MouseEvent e) {
+			switch (e.getButton()) {
 			case MouseEvent.BUTTON1:
 				fireBullet();
 				break;
-			case MouseEvent.BUTTON3:
+			case MouseEvent.BUTTON2:
 				unlock(ACHIEVE3);
+				break;
+			case MouseEvent.BUTTON3:
+				/*if (!delayButton(375) && player.isAlive()) {
+					Bullet b = new Bullet(e.getX() - 6, e.getY());
+					bullets.add(b);
+					bulletsShooted++;
+					new Thread(b, "Bullet-" + bulletsShooted).start();
+				} //*/
 				break;
 			default:
 				break;
@@ -638,15 +626,19 @@ public final class Main extends Engine {
 	private final class WindowsListener extends WindowAdapter {
 
 		@Override
-		public void windowClosing(WindowEvent event) {
+		public void windowClosing(WindowEvent e) {
 			setPaused(true);
 			setEnabled(false);
 		}
 
 		@Override
-		public void windowLostFocus(WindowEvent event) {
-			player.setXVelocity(0);
-			player.setYVelocity(0);
+		public void windowActivated(WindowEvent e) {
+			setPaused(false);
+		}
+
+		@Override
+		public void windowDeactivated(WindowEvent e) {
+			setPaused(true);
 		}
 	}
 }

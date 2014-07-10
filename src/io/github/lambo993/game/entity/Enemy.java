@@ -2,7 +2,6 @@ package io.github.lambo993.game.entity;
 
 import io.github.lambo993.game.Main;
 import java.awt.*;
-import java.util.Random;
 
 /**
  * The <code>Enemy</code> Entity
@@ -14,11 +13,10 @@ public class Enemy extends Entity {
 	private boolean isIgnoring = false;
 
 	public Enemy() {
-		Random rng = new Random();
-		setX(rng.nextInt(580));
+		setX(r.nextInt(580));
 		setY(50);
-		setXVelocity(-1 + rng.nextInt(3));
-		setYVelocity(-1 + rng.nextInt(3));
+		setXVelocity(-1 + r.nextInt(3));
+		setYVelocity(-1 + r.nextInt(3));
 		if (getXVelocity() == 0 && getYVelocity() == 0) {
 			setXVelocity(1);
 			setYVelocity(1);

@@ -1,7 +1,10 @@
 package io.github.lambo993.game.entity;
 
 import io.github.lambo993.engine.*;
+import io.github.lambo993.game.Main;
+
 import java.awt.*;
+import java.util.Random;
 
 /**
  * An interface for Entity methods
@@ -9,6 +12,8 @@ import java.awt.*;
  * @since version 1.4_Alpha
  */
 public abstract class Entity extends EntityBase implements Runnable {
+
+	protected Random r = new Random();
 
 	/**
 	 * Moves the <code>Entity</code> and limit the <code>Entity</code> movement on the screen.
@@ -35,6 +40,10 @@ public abstract class Entity extends EntityBase implements Runnable {
 				setYVelocity(-1);
 			}
 		}
+	}
+
+	public boolean isPaused() {
+		return Main.isPaused();
 	}
 
 	public abstract void draw(Graphics2D g);

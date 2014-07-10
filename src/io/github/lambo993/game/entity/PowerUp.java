@@ -2,20 +2,18 @@ package io.github.lambo993.game.entity;
 
 import io.github.lambo993.game.Main;
 import java.awt.*;
-import java.util.Random;
 
 public class PowerUp extends Entity {
 
 	public PowerUp() {
-		Random rng = new Random();
-		int y = rng.nextInt(580);
+		int y = r.nextInt(580);
 		if (y <= 15) {
 			y = 16;
 		}
-		setX(rng.nextInt(780));
+		setX(r.nextInt(780));
 		setY(y);
-		setXVelocity(-1 + rng.nextInt(3));
-		setYVelocity(-1 + rng.nextInt(3));
+		setXVelocity(-1 + r.nextInt(3));
+		setYVelocity(-1 + r.nextInt(3));
 		if (getXVelocity() == 0 && getYVelocity() == 0) {
 			setXVelocity(1);
 			setYVelocity(1);

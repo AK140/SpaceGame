@@ -10,7 +10,7 @@ public enum Achievements {
 	UNKNOWN(-1, null),
 	BACK_WAY(1, "Back Way: Got ambushed by an enemy from back of the ship"),
 	MY_LOVE(2, "My Love: Shoots a power up"),
-	RIGHT_CLICK(3, "Right Clicked: It wont do anything anyway"),
+	MIDDLE_CLICK(3, "Clicked the middle button: It wont do anything anyway"),
 	KILLER(4, "Killed 100 enemies: Wow that's a lot of it");
 
 	private int id;

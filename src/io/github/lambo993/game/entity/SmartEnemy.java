@@ -21,7 +21,7 @@ public class SmartEnemy extends Enemy {
 	@Override
 	public void run() {
 		while (true) {
-			int x = player.getX() + 30;
+			int x = player.getX() + 33;
 			int y = player.getY() + 8;
 			int x1 = x + 50;
 			int x2 = x - 50;
@@ -49,6 +49,7 @@ public class SmartEnemy extends Enemy {
 
 	@Override
 	public void draw(Graphics2D g) {
-		g.drawImage(Main.loadImage("Enemy.png"), getX(), getY(), new Main());
+		g.setColor(Color.RED);
+		g.fillOval(getX(), getY(), 11, 11);
 	}
 }

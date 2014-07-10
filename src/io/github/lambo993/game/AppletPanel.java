@@ -271,22 +271,9 @@ public final class AppletPanel extends JPanel implements Runnable {
 	private void setPaused(boolean paused) {
 		if (isPaused() != paused) {
 			isPaused = paused;
-			player.setPaused(paused);
 			if (player.isPaused()) {
 				player.setXVelocity(0);
 				player.setYVelocity(0);
-			}
-			for (int i = 0; i < enemies.size(); i++) {
-				Enemy e = enemies.get(i);
-				e.setPaused(paused);
-			}
-			for (int i = 0; i < bullets.size(); i++) {
-				Bullet b = bullets.get(i);
-				b.setPaused(paused);
-			}
-			for (int i = 0; i < powers.size(); i++) {
-				PowerUp p = powers.get(i);
-				p.setPaused(paused);
 			}
 		}
 	}

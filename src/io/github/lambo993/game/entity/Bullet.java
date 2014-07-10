@@ -10,10 +10,19 @@ import java.awt.*;
  */
 public class Bullet extends Entity {
 
+	/**
+	 * Initialize a new bullet from a player
+	 * @param player The player the bullet will be shot
+	 */
 	public Bullet(Player player) {
-		this(player.getX() + 30, player.getY() - 12);
+		this(player.getX() + 33, player.getY() - 12);
 	}
 
+	/**
+	 * Initialize a new bullet
+	 * @param xCoord The X coord the bullet will spawn
+	 * @param yCoord The Y coord the bullet will spawn
+	 */
 	public Bullet(int xCoord, int yCoord) {
 		if (!isPaused()) {
 			setX(xCoord);
@@ -26,34 +35,29 @@ public class Bullet extends Entity {
 	@Override
 	public void run() {
 		while (true) {
-			if (!isPaused()) move(0, 0, 0, 0);
+			if (!isPaused()) move(0, -9, 770, 565);
 			Main.sleep();
 		}
-	}
-
-	@Override
-	public void move(int xMin, int yMin, int xMax, int yMax) {
-		setY(getY() + getYVelocity());
 	}
 
 	/**
 	 * Removes the bullet when it goes off the screen limit.
 	 * @author Lamboling Seans
-	 * @return screen top limit y 0
+	 * @return true if at offscreen bottom and above
 	 * @since version 0.5_Alpha
 	 */
 	public boolean isOffScreen() {
-		return getY() < 0 || getY() > 560;
+		return getY() < 0 || getY() > 565;
 	}
 
 	@Override
 	public void draw(Graphics2D g) {
-		g.drawImage(Main.loadImage("Bullet.gif"), getX(), getY(), new Main());
+		g.drawImage(Main.loadImage("Bullet.png"), getX(), getY(), new Main());
 	}
 
 	@Override
 	public Rectangle getHitbox() {
-		return new Rectangle(getX(), getY() + 3, 10, 21);
+		return new Rectangle(getX() - 1, getY(), 9, 17);
 	}
 
 	@Override

@@ -111,7 +111,7 @@ public final class Player extends Entity {
 		return lifePoint;
 	}
 
-	public void setLife(final int lifePoint) throws IndexOutOfBoundsException {
+	public void setLife(final int lifePoint) {
 		if (lifePoint < 0 || lifePoint > 3) {
 			throw new IndexOutOfBoundsException("You can't set life more than 3 or less then 0");
 		}
