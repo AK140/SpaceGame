@@ -1,14 +1,14 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.game.Main;
+import io.github.ak140.game.*;
 import java.awt.*;
 
 public class PowerUp extends Entity {
 
 	public PowerUp() {
 		int y = r.nextInt(580);
-		if (y <= 15) {
-			y = 16;
+		if (y <= 20) {
+			y = 21;
 		}
 		setX(r.nextInt(780));
 		setY(y);

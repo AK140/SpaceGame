@@ -1,6 +1,6 @@
-package io.github.lambo993.game;
+package io.github.ak140.game;
 
-import io.github.lambo993.game.entity.*;
+import io.github.ak140.game.entity.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -52,7 +52,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 				if (Main.collidesWith(player, e)) {
 					Main.playSound("explosion.wav");
 					enemies.remove(i);
-					player.removeLife(1);
+					player.reduceHealth(1);
 					if (e.isSmart()) {
 						if (e.getY() > player.getY()) {
 							Main.unlock(Main.ACHIEVE1);
@@ -85,10 +85,10 @@ public final class AppletPanel extends JPanel implements Runnable {
 				if (Main.collidesWith(player, powers.get(i))) {
 					powers.remove(i);
 					Main.playSound("powerup.wav");
-					if (player.getLife() == 3) {
+					if (player.getHealth() == 3) {
 						m.addScore(1);
 					}
-					player.addLife(1);
+					player.addHealth(1);
 				}
 			}
 			for (int i = 0; i < powers.size(); i++) {
@@ -133,7 +133,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 		g.setColor(Color.BLACK);
 		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		g.drawString(Integer.toString(m.getScore()), 85, 45);
-		g.drawString(Integer.toString(player.getLife()), 85, 60);
+		g.drawString(Integer.toString(player.getHealth()), 85, 60);
 		g.drawString("Score:", 40, 45);
 		g.drawString("HP:", 40, 60);
 		if (debugEnabled) {
@@ -258,7 +258,7 @@ public final class AppletPanel extends JPanel implements Runnable {
 		powers.removeAll(powers);
 		enemies.removeAll(enemies);
 		bullets.removeAll(bullets);
-		player.setLife(3);
+		player.setHealth(3);
 		player.setAlive(true);
 		killedEnemy = 0;
 		m.setScore(0);

@@ -1,6 +1,6 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.game.Main;
+import io.github.ak140.game.*;
 import java.awt.*;
 
 /**
@@ -21,7 +21,7 @@ public class SmartEnemy extends Enemy {
 	@Override
 	public void run() {
 		while (true) {
-			int x = player.getX() + 33;
+			int x = player.getX() + 31;
 			int y = player.getY() + 8;
 			int x1 = x + 50;
 			int x2 = x - 50;

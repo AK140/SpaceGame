@@ -1,6 +1,6 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.game.Main;
+import io.github.ak140.game.*;
 import java.awt.*;
 
 /**
@@ -37,10 +37,18 @@ public class Enemy extends Entity {
 		g.fillOval(getX(), getY(), 11, 11);
 	}
 
+	/**
+	 * Check if the enemy is smart
+	 * @return True if smart False if other types
+	 */
 	public boolean isSmart() {
 		return this instanceof SmartEnemy;
 	}
 
+	/**
+	 * Checking if a smart enemy is ignoring player movements
+	 * @return True if ignoring player movements False if following
+	 */
 	public boolean isIgnoring() {
 		return isIgnoring;
 	}

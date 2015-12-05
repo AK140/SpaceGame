@@ -1,7 +1,7 @@
-package io.github.lambo993.game;
+package io.github.ak140.game;
 
-import io.github.lambo993.engine.*;
-import io.github.lambo993.game.entity.*;
+import io.github.ak140.engine.*;
+import io.github.ak140.game.entity.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -51,7 +51,7 @@ public final class Main extends Engine {
 	 */
 	protected Main(final boolean createWindows) throws HeadlessException {
 		super("Space Catastrophe", 800, 600, createWindows);
-		player = new Player(this);
+		player = new Player(this, 3);
 		bullets = new ArrayList<Bullet>();
 		enemies = new ArrayList<Enemy>();
 		powers = new ArrayList<PowerUp>();
@@ -77,7 +77,7 @@ public final class Main extends Engine {
 				if (collidesWith(player, e)) {
 					playSound("explosion.wav");
 					enemies.remove(i);
-					player.removeLife(1);
+					player.reduceHealth(1);
 					if (e.isSmart()) {
 						if (e.getY() > player.getY() + 10) {
 							unlock(ACHIEVE1);
@@ -108,14 +108,14 @@ public final class Main extends Engine {
 				if (collidesWith(player, p)) {
 					powers.remove(i);
 					playSound("powerup.wav");
-					if (player.getLife() == 3) {
+					if (player.getHealth() == 3) {
 						addScore(1);
 					}
-					player.addLife(1);
+					player.addHealth(1);
 					powersCollected++;
 				}
 				for (int j = 0; j < bullets.size(); j++) {
-					if (collidesWith(bullets.get(j), p)) {
+					if (collidesWith(p, bullets.get(j))) {
 						unlock(ACHIEVE2);
 					}
 				}
@@ -138,7 +138,7 @@ public final class Main extends Engine {
 			if (debugEnabled) g.draw(e.getHitbox());
 			e.draw(g);
 		}
-		for (int i = 0; i < powers.size() ;i++) {
+		for (int i = 0; i < powers.size(); i++) {
 			PowerUp p = powers.get(i);
 			if (debugEnabled) g.draw(p.getHitbox());
 			p.draw(g);
@@ -147,7 +147,7 @@ public final class Main extends Engine {
 		g.setColor(Color.BLACK);
 		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		g.drawString("Score: " + getScore(), 40, 45);
-		g.drawString("HP:    " + player.getLife(), 40, 60);
+		g.drawString("HP:    " + player.getHealth(), 40, 60);
 		if (debugEnabled) {
 			if (player.isAlive()) g.draw(player.getHitbox());
 			g.drawString("x: " + player.getX(), 735, 45);
@@ -170,7 +170,7 @@ public final class Main extends Engine {
 	 * @since version 1.4_Alpha
 	 */
 	public static Image loadImage(String path) {
-		return loadImage("/io/github/lambo993/game/images/" + path, false);
+		return loadImage("/io/github/ak140/game/images/" + path, false);
 	}
 
 	/**
@@ -179,7 +179,7 @@ public final class Main extends Engine {
 	 * @since version 1.7_Alpha
 	 */
 	public static void playSound(final String path) {
-		playSound("/io/github/lambo993/game/sound/" + path, 0);
+		playSound("/io/github/ak140/game/sound/" + path, 0);
 	}
 
 	public static void sleep() {
@@ -215,6 +215,10 @@ public final class Main extends Engine {
 		return hitBox1.intersects(hitBox2) || hitBox2.intersects(hitBox1);
 	}
 
+	/**
+	 * Unlocks an achievement
+	 * @param a Achievement id/type to unlock
+	 */
 	public static void unlock(Achievements a) {
 		if (!a.isUnlocked() && !isPaused()) {
 			LOGGER.info("Achievements unlocked! " + a.getName());
@@ -228,18 +232,14 @@ public final class Main extends Engine {
 	}
 
 	/**
-	 * Delays the bullet shooting
+	 * Shoots the bullet and wait a delay
 	 * @since version 1.7.5_Alpha
 	 */
 	public void fireBullet() {
 		if (!delayButton(375)) { //FIXME: Pausing doesn't pause the bullet shooting time limit
 			return;
 		}
-		shootBullet(10);
-	}
-
-	private void shootBullet(int spawnLimit) {
-		if (bullets.size() < spawnLimit && player.isAlive()) {
+		if (bullets.size() < 10 && player.isAlive()) {
 			Bullet b = new Bullet(player);
 			bullets.add(b);
 			bulletsShooted++;
@@ -286,9 +286,9 @@ public final class Main extends Engine {
 		LOGGER.info("Starting game...");
 		System.setProperty("spacecatastrophe.name", toString());
 		System.setProperty("spacecatastrophe.version", "1.8.6_Alpha");
-		System.setProperty("spacecatastrophe.author", "Lambo993");
+		System.setProperty("spacecatastrophe.author", "AK140");
 		/*Object obj = JOptionPane.showInputDialog(this, "Menu", toString(), JOptionPane.PLAIN_MESSAGE,
-				new ImageIcon(Main.class.getResource("/io/github/lambo993/game/images/Ship.png")),
+				new ImageIcon(Main.class.getResource("/io/github/ak140/game/images/Ship.png")),
 				new Object[] { "Play", "MultiPlayer", "Settings", "Exit" }, "Play");
 		if (obj.equals("Exit")) {
 			LOGGER.info("Closed game");
@@ -300,7 +300,7 @@ public final class Main extends Engine {
 		} else if (obj.equals("Settings")) {
 			LOGGER.info("Not supported yet");
 		} //*/
-		playSound("/io/github/lambo993/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
+		playSound("/io/github/ak140/game/sound/music.wav", Clip.LOOP_CONTINUOUSLY);
 		LOGGER.info("You are now running " + toString() + " version " + System.getProperty("spacecatastrophe.version") + " Developed by Lamboling Seans");
 	}
 
@@ -335,7 +335,7 @@ public final class Main extends Engine {
 		powers.clear();
 		enemies.clear();
 		bullets.clear();
-		player.setLife(3);
+		player.setHealth(player.getMaxHealth());
 		player.setAlive(true);
 		bulletsShooted = 0;
 		killedEnemy = 0;
@@ -385,7 +385,7 @@ public final class Main extends Engine {
 			PrintStream out = new PrintStream(file);
 			out.println("Here's the previous stats");
 			out.println("Score: " + getScore());
-			out.println("Life: " + player.getLife());
+			out.println("Life: " + player.getHealth());
 			out.println("Bullets Shooted: " + bulletsShooted);
 			out.println("Killed Enemy: " + killedEnemy);
 			out.println("PowerUps Collected: " + powersCollected);
@@ -430,7 +430,7 @@ public final class Main extends Engine {
 			}
 			File file = new File(dir, "crash-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + "-client.txt");
 			PrintStream err = new PrintStream(file);
-			err.println("Please go to https://github.com/Lambo993/SpaceGame/issues and report this");
+			err.println("Please go to https://github.com/AK140/SpaceGame/issues and report this");
 			err.println("Stack Trace:");
 			t.printStackTrace(err);
 			err.println("System details:");

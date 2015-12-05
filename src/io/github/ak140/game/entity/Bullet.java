@@ -1,21 +1,21 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.game.Main;
+import io.github.ak140.game.*;
 import java.awt.*;
 
 /**
  * The <code>Bullet</code> Entity
- * @author Lamboling Seans
+ * @author AK140
  * @since version 0.5_Alpha
  */
 public class Bullet extends Entity {
 
 	/**
-	 * Initialize a new bullet from a player
+	 * Initialize a new bullet from a <code>Player</code>
 	 * @param player The player the bullet will be shot
 	 */
 	public Bullet(Player player) {
-		this(player.getX() + 33, player.getY() - 12);
+		this(player.getX() + 31, player.getY() - 12);
 	}
 
 	/**
@@ -35,14 +35,13 @@ public class Bullet extends Entity {
 	@Override
 	public void run() {
 		while (true) {
-			if (!isPaused()) move(0, -9, 770, 565);
+			if (!isPaused()) move(0, -9, 790, 565);
 			Main.sleep();
 		}
 	}
 
 	/**
 	 * Removes the bullet when it goes off the screen limit.
-	 * @author Lamboling Seans
 	 * @return true if at offscreen bottom and above
 	 * @since version 0.5_Alpha
 	 */

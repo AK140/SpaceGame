@@ -1,8 +1,7 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.engine.*;
-import io.github.lambo993.game.Main;
-
+import io.github.ak140.engine.*;
+import io.github.ak140.game.*;
 import java.awt.*;
 import java.util.Random;
 
@@ -17,9 +16,9 @@ public abstract class Entity extends EntityBase implements Runnable {
 
 	/**
 	 * Moves the <code>Entity</code> and limit the <code>Entity</code> movement on the screen.
-	 * @param xMin Minimum screen limit from the x coord
-	 * @param yMin Minimum screen limit from the y coord
-	 * @param xMax Maximum screen limit from the x coord
+	 * @param xMin Minimum screen limit from the x cord
+	 * @param yMin Minimum screen limit from the y cord
+	 * @param xMax Maximum screen limit from the x cord
 	 * @param yMax Maximum screen limit from the y cord
 	 * @since version 0.3_Alpha
 	 */

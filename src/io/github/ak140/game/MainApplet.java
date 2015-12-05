@@ -1,4 +1,4 @@
-package io.github.lambo993.game;
+package io.github.ak140.game;
 
 import javax.swing.*;
 import java.awt.BorderLayout;

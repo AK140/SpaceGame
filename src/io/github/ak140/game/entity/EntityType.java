@@ -1,8 +1,9 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
 /**
  * Currently unusued hopefully to be used soon
- * @author Lamboling Seans
+ * @author AK140
+ * @Since version 1.6_Alpha
  */
 public enum EntityType {
 

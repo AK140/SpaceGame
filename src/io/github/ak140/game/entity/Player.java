@@ -1,26 +1,24 @@
-package io.github.lambo993.game.entity;
+package io.github.ak140.game.entity;
 
-import io.github.lambo993.game.*;
+import io.github.ak140.game.*;
 import java.awt.*;
 
 /**
  * Seperate the Main class and the Player
- * @author Lamboling Seans
+ * @author AK140
  * @since version 1.7.6_Alpha
  */
 public final class Player extends Entity {
 
 	private boolean isAlive;
-	private int lifePoint;
+	private int lifePoint, maxHealth;
 	private Main m;
 
-	public Player(Main m) {
+	public Player(Main m, int maxHealth) {
 		this.m = m;
 		setX(400);
 		setY(300);
-		setXVelocity(0);
-		setYVelocity(0);
-		setLife(3);
+		setMaxHealth(maxHealth);
 		setAlive(true);
 	}
 
@@ -86,10 +84,10 @@ public final class Player extends Entity {
 		if (isAlive() != alive) {
 			isAlive = alive;
 			if (!alive) {
-				setLife(0);
+				setHealth(0);
 				Main.playSound("lost.wav");
 			} else {
-				setLife(3);
+				setHealth(getMaxHealth());
 			}
 		}
 	}
@@ -98,47 +96,55 @@ public final class Player extends Entity {
 	 * Gets the player current LifePoint
 	 * @return The Players Life
 	 */
-	public int getLife() {
+	public int getHealth() {
 		if (lifePoint < 1) {
 			setAlive(false);
-		} else if (lifePoint > 3) {
-			Main.LOGGER.warning("LifePoint can't be more than 3!");
-			setLife(3);
 		} else if (lifePoint < 0) {
 			Main.LOGGER.warning("LifePoint can't be less than 0!");
-			setLife(0);
+			setHealth(0);
 		}
 		return lifePoint;
 	}
 
-	public void setLife(final int lifePoint) {
-		if (lifePoint < 0 || lifePoint > 3) {
-			throw new IndexOutOfBoundsException("You can't set life more than 3 or less then 0");
+	public int getMaxHealth() {
+		return maxHealth;
+	}
+
+	public void setHealth(final int lifePoint) {
+		if (lifePoint < 0 || lifePoint > getMaxHealth()) {
+			throw new IndexOutOfBoundsException("You can't set health more than Max health or less than 0");
 		}
 		this.lifePoint = lifePoint;
 	}
 
-	public void addLife(int healed) {
-		if (getLife() < 3) {
-			lifePoint += healed;
+	public void setMaxHealth(int maxHealth) {
+		if (maxHealth < 0) {
+			throw new IndexOutOfBoundsException("You can't use negative");
 		}
-		if (healed <= 0) {
+		this.maxHealth = maxHealth;
+	}
+
+	public void addHealth(int value) {
+		if (getHealth() < getMaxHealth()) {
+			lifePoint += value;
+		}
+		if (value <= 0) {
 			throw new IllegalArgumentException("You can't use negative");
 		}
 	}
 
-	public void removeLife(int attacked) {
-		if (getLife() > 0) {
-			lifePoint -= attacked;
+	public void reduceHealth(int value) {
+		if (getHealth() > 0) {
+			lifePoint -= value;
 		}
-		if (attacked < 0) {
+		if (value < 0) {
 			throw new IllegalArgumentException("You can't use negative");
 		}
 	}
 
 	@Override
 	public Rectangle getHitbox() {
-		return new Rectangle(getX(), getY(), 69, 33);
+		return new Rectangle(getX(), getY(), 66, 36);
 	}
 
 	@Override
